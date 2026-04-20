@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HabitFlow — Track Your Life</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">HabitFlow</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="nav-item active" data-view="dashboard">
+          <i class="fas fa-th-large"></i><span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-view="habits">
+          <i class="fas fa-fire"></i><span>Habits</span>
+        </a>
+        <a href="#" class="nav-item" data-view="activities">
+          <i class="fas fa-running"></i><span>Activities</span>
+        </a>
+        <a href="#" class="nav-item" data-view="learning">
+          <i class="fas fa-book-open"></i><span>Learning</span>
+        </a>
+        <a href="#" class="nav-item" data-view="jobs">
+          <i class="fas fa-briefcase"></i><span>Job Hunt</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="streak-badge">
+          <i class="fas fa-fire"></i>
+          <span id="global-streak">0</span> day streak
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <h1 id="view-title">Dashboard</h1>
+          <p id="view-date"></p>
+        </div>
+        <div class="header-right">
+          <button class="btn-add" id="open-modal">
+            <i class="fas fa-plus"></i> Add Item
+          </button>
+        </div>
+      </header>
+
+      <!-- Dashboard View -->
+      <section class="view active" id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card" data-cat="habits">
+            <div class="stat-icon"><i class="fas fa-fire"></i></div>
+            <div class="stat-info">
+              <span class="stat-num" id="stat-habits">0</span>
+              <span class="stat-label">Habits Today</span>
+            </div>
+            <div class="stat-ring">
+              <svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill habits-ring" cx="18" cy="18" r="15" id="ring-habits"/></svg>
+            </div>
+          </div>
+          <div class="stat-card" data-cat="activities">
+            <div class="stat-icon"><i class="fas fa-running"></i></div>
+            <div class="stat-info">
+              <span class="stat-num" id="stat-activities">0</span>
+              <span class="stat-label">Activities</span>
+            </div>
+            <div class="stat-ring">
+              <svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill activities-ring" cx="18" cy="18" r="15" id="ring-activities"/></svg>
+            </div>
+          </div>
+          <div class="stat-card" data-cat="learning">
+            <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+            <div class="stat-info">
+              <span class="stat-num" id="stat-learning">0</span>
+              <span class="stat-label">Learning</span>
+            </div>
+            <div class="stat-ring">
+              <svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill learning-ring" cx="18" cy="18" r="15" id="ring-learning"/></svg>
+            </div>
+          </div>
+          <div class="stat-card" data-cat="jobs">
+            <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
+            <div class="stat-info">
+              <span class="stat-num" id="stat-jobs">0</span>
+              <span class="stat-label">Job Apps</span>
+            </div>
+            <div class="stat-ring">
+              <svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill jobs-ring" cx="18" cy="18" r="15" id="ring-jobs"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card today-card">
+            <h3><i class="fas fa-calendar-day"></i> Today's Tasks</h3>
+            <div id="today-list" class="item-list"></div>
+          </div>
+          <div class="card heatmap-card">
+            <h3><i class="fas fa-chart-bar"></i> Weekly Overview</h3>
+            <div id="weekly-chart" class="weekly-chart"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Category Views -->
+      <section class="view" id="view-habits">
+        <div class="card full-card">
+          <h3><i class="fas fa-fire"></i> My Habits</h3>
+          <div id="list-habits" class="item-list"></div>
+        </div>
+      </section>
+      <section class="view" id="view-activities">
+        <div class="card full-card">
+          <h3><i class="fas fa-running"></i> Activities</h3>
+          <div id="list-activities" class="item-list"></div>
+        </div>
+      </section>
+      <section class="view" id="view-learning">
+        <div class="card full-card">
+          <h3><i class="fas fa-book-open"></i> Learning</h3>
+          <div id="list-learning" class="item-list"></div>
+        </div>
+      </section>
+      <section class="view" id="view-jobs">
+        <div class="card full-card">
+          <h3><i class="fas fa-briefcase"></i> Job Hunting</h3>
+          <div id="list-jobs" class="item-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add New Item</h2>
+        <button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="add-form">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="form-title" placeholder="e.g. Morning run, Read 30 mins..." required />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <div class="cat-selector">
+            <button type="button" class="cat-btn active" data-cat="habits"><i class="fas fa-fire"></i> Habits</button>
+            <button type="button" class="cat-btn" data-cat="activities"><i class="fas fa-running"></i> Activities</button>
+            <button type="button" class="cat-btn" data-cat="learning"><i class="fas fa-book-open"></i> Learning</button>
+            <button type="button" class="cat-btn" data-cat="jobs"><i class="fas fa-briefcase"></i> Job Hunt</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes (optional)</label>
+          <input type="text" id="form-notes" placeholder="Any extra details..." />
+        </div>
+        <div class="form-group">
+          <label>Repeat</label>
+          <select id="form-repeat">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="once">One-time</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-submit">Add Item <i class="fas fa-arrow-right"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
