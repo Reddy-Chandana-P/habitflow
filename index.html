@@ -130,9 +130,24 @@
         </div>
       </section>
       <section class="view" id="view-learning">
-        <div class="card full-card">
-          <h3><i class="fas fa-book-open"></i> Learning</h3>
-          <div id="list-learning" class="item-list"></div>
+        <div class="learning-layout">
+          <!-- Subject Tracker -->
+          <div class="learning-subjects">
+            <div class="learning-header-row">
+              <h3 class="section-title"><i class="fas fa-graduation-cap"></i> Subjects</h3>
+            </div>
+            <div id="subject-cards" class="subject-cards"></div>
+          </div>
+          <!-- Right panel: topics + habits -->
+          <div class="learning-right">
+            <div class="card full-card" id="subject-detail-panel">
+              <div class="empty-state"><i class="fas fa-hand-point-left"></i><p>Pick a subject to see your topics</p></div>
+            </div>
+            <div class="card full-card" style="margin-top:16px">
+              <h3><i class="fas fa-book-open"></i> Learning Habits</h3>
+              <div id="list-learning" class="item-list"></div>
+            </div>
+          </div>
         </div>
       </section>
       <section class="view" id="view-jobs">
@@ -261,6 +276,7 @@
       </div>
       <form id="edit-form">
         <input type="hidden" id="edit-id" />
+        <input type="hidden" id="edit-cat" />
         <div class="form-group">
           <label>Title</label>
           <input type="text" id="edit-title" required />
@@ -339,6 +355,37 @@
     </div>
   </div>
 
+  <!-- Topic Modal -->
+  <div class="modal-overlay" id="topic-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="topic-modal-title">Add Topic</h2>
+        <button class="modal-close" id="close-topic-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="topic-form">
+        <input type="hidden" id="topic-subject-key" />
+        <input type="hidden" id="topic-id" />
+        <div class="form-group">
+          <label>Topic Name</label>
+          <input type="text" id="topic-name" placeholder="e.g. Binary Search, Normalization..." required />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <div class="cat-selector" id="topic-status-selector">
+            <button type="button" class="topic-status-btn active" data-status="not-started">⬜ Not Started</button>
+            <button type="button" class="topic-status-btn" data-status="in-progress">🔄 In Progress</button>
+            <button type="button" class="topic-status-btn" data-status="done">✅ Done</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="topic-notes" placeholder="Resources, page numbers, links..." />
+        </div>
+        <button type="submit" class="btn-submit">Save Topic <i class="fas fa-check"></i></button>
+      </form>
+    </div>
+  </div>
+
   <!-- Creator Post Modal -->
   <div class="modal-overlay" id="post-modal-overlay">
     <div class="modal">
@@ -371,6 +418,15 @@
         </div>
         <button type="submit" class="btn-submit">Save Post <i class="fas fa-check"></i></button>
       </form>
+    </div>
+  </div>
+
+  <!-- Subject Picker Popup -->
+  <div class="subject-popup-overlay" id="subject-popup-overlay">
+    <div class="subject-popup">
+      <div class="subject-popup-title">📚 What did you study?</div>
+      <div class="subject-popup-grid" id="subject-popup-grid"></div>
+      <button class="subject-popup-skip" id="subject-popup-skip">Skip</button>
     </div>
   </div>
 

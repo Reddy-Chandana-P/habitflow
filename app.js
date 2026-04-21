@@ -72,6 +72,7 @@ function renderAll() {
   updateGlobalStreak();
   renderCalendar();
   renderCreator();
+  renderSubjectCards();
 }
 
 function renderStats() {
@@ -131,6 +132,9 @@ function renderItem(item, compact = false) {
   const isDone = item.completedDates && item.completedDates.includes(todayStr);
   const streak = calcStreak(item);
   const timingLabel = item.timing && item.timing !== 'anytime' ? ` · ${timingIcons[item.timing]} ${item.timing}` : '';
+  const subjectLabel = item.cat === 'learning' && item.subject
+    ? ` · 📚 ${SUBJECTS.find(s => s.key === item.subject)?.label || item.subject}`
+    : '';
 
   return `
     <div class="item ${isDone ? 'done' : ''}" data-id="${item.id}">
@@ -143,6 +147,7 @@ function renderItem(item, compact = false) {
           <span style="color:${catColors[item.cat]}">${item.cat}</span>
           ${item.notes ? ` · ${escHtml(item.notes)}` : ''}
           ${timingLabel}
+          ${subjectLabel}
           ${streak > 1 ? ` · 🔥 ${streak} day streak` : ''}
           · ${item.repeat}
         </div>
@@ -232,16 +237,72 @@ function toggleItem(id) {
   const item = state.items.find(i => i.id === id);
   if (!item) return;
 
-  if (!item.completedDates) item.completedDates = [];
   const todayStr = today();
-  const idx = item.completedDates.indexOf(todayStr);
+  if (!item.completedDates) item.completedDates = [];
+  const alreadyDone = item.completedDates.includes(todayStr);
 
-  if (idx === -1) {
-    item.completedDates.push(todayStr);
-    showToast(`"${item.title}" marked done! 🎉`);
-  } else {
-    item.completedDates.splice(idx, 1);
+  // If unchecking, just unmark — no popup needed
+  if (alreadyDone) {
+    item.completedDates.splice(item.completedDates.indexOf(todayStr), 1);
+    saveState();
+    renderAll();
     showToast(`"${item.title}" unmarked`, 'error');
+    return;
+  }
+
+  // If learning item, show subject picker first
+  if (item.cat === 'learning') {
+    openSubjectPopup(id);
+    return;
+  }
+
+  item.completedDates.push(todayStr);
+  saveState();
+  renderAll();
+  showToast(`"${item.title}" marked done! 🎉`);
+}
+
+function openSubjectPopup(itemId) {
+  const grid = document.getElementById('subject-popup-grid');
+  grid.innerHTML = SUBJECTS.map(s => `
+    <button class="subj-pick-btn" data-key="${s.key}" style="--sc:${s.color}">
+      <i class="fas ${s.icon}"></i>
+      <span>${s.label}</span>
+    </button>
+  `).join('');
+
+  grid.querySelectorAll('.subj-pick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      completeWithSubject(itemId, btn.dataset.key);
+      closeSubjectPopup();
+    });
+  });
+
+  document.getElementById('subject-popup-skip').onclick = () => {
+    completeWithSubject(itemId, null);
+    closeSubjectPopup();
+  };
+
+  document.getElementById('subject-popup-overlay').classList.add('open');
+}
+
+function closeSubjectPopup() {
+  document.getElementById('subject-popup-overlay').classList.remove('open');
+}
+
+function completeWithSubject(itemId, subjectKey) {
+  const item = state.items.find(i => i.id === itemId);
+  if (!item) return;
+  const todayStr = today();
+  if (!item.completedDates) item.completedDates = [];
+  item.completedDates.push(todayStr);
+
+  // Log to subject tracker if a subject was picked
+  if (subjectKey && learnState.subjects[subjectKey]) {
+    const subj = SUBJECTS.find(s => s.key === subjectKey);
+    showToast(`"${item.title}" done · logged to ${subj.label}! 🎉`);
+  } else {
+    showToast(`"${item.title}" marked done! 🎉`);
   }
 
   saveState();
@@ -257,7 +318,7 @@ function deleteItem(id) {
   showToast(`Deleted "${item.title}"`, 'error');
 }
 
-function addItem(title, cat, notes, repeat, timing) {
+function addItem(title, cat, notes, repeat, timing, subject) {
   const item = {
     id: uid(),
     title,
@@ -265,6 +326,7 @@ function addItem(title, cat, notes, repeat, timing) {
     notes,
     repeat,
     timing: timing || 'anytime',
+    subject: subject || '',
     createdDate: today(),
     completedDates: []
   };
@@ -274,13 +336,14 @@ function addItem(title, cat, notes, repeat, timing) {
   showToast(`Added "${title}" to ${cat}!`);
 }
 
-function editItem(id, title, notes, repeat, timing) {
+function editItem(id, title, notes, repeat, timing, subject) {
   const item = state.items.find(i => i.id === id);
   if (!item) return;
   item.title = title;
   item.notes = notes;
   item.repeat = repeat;
   item.timing = timing || 'anytime';
+  if (item.cat === 'learning') item.subject = subject || '';
   saveState();
   renderAll();
   showToast(`"${title}" updated!`);
@@ -297,8 +360,9 @@ function switchView(view) {
   if (viewEl) viewEl.classList.add('active');
   if (navEl) navEl.classList.add('active');
 
-  const titles = { dashboard: 'Dashboard', habits: 'Habits', activities: 'Activities', learning: 'Learning', jobs: 'Job Hunting' };
+  const titles = { dashboard: 'Dashboard', habits: 'Habits', activities: 'Activities', learning: 'Learning', jobs: 'Job Hunting', creator: 'Creator' };
   document.getElementById('view-title').textContent = titles[view] || view;
+  document.getElementById('open-modal').style.display = view === 'creator' ? 'none' : 'flex';
 }
 
 // ── Modal ──────────────────────────────────────────────
@@ -322,9 +386,18 @@ function openEditModal(id) {
   const item = state.items.find(i => i.id === id);
   if (!item) return;
   document.getElementById('edit-id').value = item.id;
+  document.getElementById('edit-cat').value = item.cat;
   document.getElementById('edit-title').value = item.title;
   document.getElementById('edit-notes').value = item.notes || '';
   document.getElementById('edit-repeat').value = item.repeat;
+
+  const subjGroup = document.getElementById('edit-subject-group');
+  if (item.cat === 'learning') {
+    subjGroup.style.display = 'block';
+    document.getElementById('edit-subject').value = item.subject || '';
+  } else {
+    subjGroup.style.display = 'none';
+  }
 
   const timing = item.timing || 'anytime';
   document.querySelectorAll('#edit-timing-selector .timing-btn').forEach(b => {
@@ -338,6 +411,174 @@ function openEditModal(id) {
 
 function closeEditModal() {
   document.getElementById('edit-modal-overlay').classList.remove('open');
+}
+
+// ── Learning / Subject Tracker ─────────────────────────
+const LEARN_KEY = 'habitflow_learning';
+
+const SUBJECTS = [
+  { key: 'dsa',     label: 'DSA',             icon: 'fa-code-branch',      color: '#f97316' },
+  { key: 'dbms',    label: 'DBMS',            icon: 'fa-database',         color: '#22d3ee' },
+  { key: 'os',      label: 'OS',              icon: 'fa-server',           color: '#a78bfa' },
+  { key: 'cn',      label: 'Computer Networks', icon: 'fa-network-wired',  color: '#34d399' },
+  { key: 'oop',     label: 'OOP',             icon: 'fa-cubes',            color: '#f43f5e' },
+  { key: 'sd',      label: 'System Design',   icon: 'fa-sitemap',          color: '#fbbf24' },
+  { key: 'coa',     label: 'COA',             icon: 'fa-microchip',        color: '#60a5fa' },
+  { key: 'se',      label: 'Software Engg',   icon: 'fa-project-diagram',  color: '#e879f9' },
+  { key: 'leetcode',label: 'LeetCode',        icon: 'fa-terminal',         color: '#fb923c' },
+  { key: 'projects',label: 'Projects',        icon: 'fa-folder-open',      color: '#4ade80' },
+];
+
+let learnState = {
+  subjects: {},   // { key: { topics: [{id, name, status, notes, date}] } }
+  activeSubject: null,
+  topicStatus: 'not-started'
+};
+
+function loadLearn() {
+  try {
+    const saved = localStorage.getItem(LEARN_KEY);
+    if (saved) learnState.subjects = JSON.parse(saved);
+  } catch(e) {}
+  // ensure all subjects exist
+  SUBJECTS.forEach(s => {
+    if (!learnState.subjects[s.key]) learnState.subjects[s.key] = { topics: [] };
+  });
+}
+
+function saveLearn() {
+  localStorage.setItem(LEARN_KEY, JSON.stringify(learnState.subjects));
+}
+
+function renderSubjectCards() {
+  const container = document.getElementById('subject-cards');
+  if (!container) return;
+
+  container.innerHTML = SUBJECTS.map(s => {
+    const data = learnState.subjects[s.key] || { topics: [] };
+    const total = data.topics.length;
+    const done  = data.topics.filter(t => t.status === 'done').length;
+    const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+    const isActive = learnState.activeSubject === s.key;
+
+    return `
+      <div class="subject-card ${isActive ? 'active' : ''}" data-key="${s.key}" style="--sc:${s.color}">
+        <div class="sc-icon"><i class="fas ${s.icon}"></i></div>
+        <div class="sc-body">
+          <div class="sc-label">${s.label}</div>
+          <div class="sc-progress-bar"><div class="sc-progress-fill" style="width:${pct}%"></div></div>
+          <div class="sc-meta">${done}/${total} topics · ${pct}%</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.subject-card').forEach(card => {
+    card.addEventListener('click', () => {
+      learnState.activeSubject = card.dataset.key;
+      renderSubjectCards();
+      renderSubjectDetail(card.dataset.key);
+    });
+  });
+}
+
+function renderSubjectDetail(key) {
+  const panel = document.getElementById('subject-detail-panel');
+  if (!panel) return;
+  const subj = SUBJECTS.find(s => s.key === key);
+  const data  = learnState.subjects[key] || { topics: [] };
+  const topics = data.topics;
+
+  const statusOrder = { 'in-progress': 0, 'not-started': 1, 'done': 2 };
+  const sorted = [...topics].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+
+  const statusIcon = { 'not-started': '⬜', 'in-progress': '🔄', 'done': '✅' };
+  const statusColor = { 'not-started': 'var(--text-muted)', 'in-progress': '#fbbf24', 'done': 'var(--jobs)' };
+
+  panel.innerHTML = `
+    <div class="sd-header">
+      <div class="sd-title" style="color:${subj.color}"><i class="fas ${subj.icon}"></i> ${subj.label}</div>
+      <button class="btn-add-topic" data-key="${key}"><i class="fas fa-plus"></i> Add Topic</button>
+    </div>
+    <div class="sd-topics">
+      ${sorted.length === 0
+        ? `<div class="empty-state"><i class="fas fa-list-ul"></i><p>No topics yet. Add your first one!</p></div>`
+        : sorted.map(t => `
+          <div class="topic-item" data-id="${t.id}">
+            <span class="topic-status-icon">${statusIcon[t.status]}</span>
+            <div class="topic-body">
+              <div class="topic-name">${escHtml(t.name)}</div>
+              ${t.notes ? `<div class="topic-notes">${escHtml(t.notes)}</div>` : ''}
+            </div>
+            <div class="item-actions">
+              <button class="item-btn edit-topic-btn" data-key="${key}" data-id="${t.id}" title="Edit"><i class="fas fa-pen"></i></button>
+              <button class="item-btn delete-topic-btn" data-key="${key}" data-id="${t.id}" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        `).join('')
+      }
+    </div>
+  `;
+
+  panel.querySelector('.btn-add-topic').addEventListener('click', () => openTopicModal(key, null));
+  panel.querySelectorAll('.edit-topic-btn').forEach(btn => {
+    btn.addEventListener('click', () => openTopicModal(btn.dataset.key, btn.dataset.id));
+  });
+  panel.querySelectorAll('.delete-topic-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteTopic(btn.dataset.key, btn.dataset.id));
+  });
+}
+
+function openTopicModal(key, topicId) {
+  learnState.topicStatus = 'not-started';
+  const subj = SUBJECTS.find(s => s.key === key);
+  document.getElementById('topic-subject-key').value = key;
+  document.getElementById('topic-id').value = topicId || '';
+  document.getElementById('topic-modal-title').textContent = `${topicId ? 'Edit' : 'Add'} Topic — ${subj.label}`;
+
+  if (topicId) {
+    const t = (learnState.subjects[key].topics || []).find(t => t.id === topicId);
+    if (!t) return;
+    document.getElementById('topic-name').value = t.name;
+    document.getElementById('topic-notes').value = t.notes || '';
+    learnState.topicStatus = t.status;
+  } else {
+    document.getElementById('topic-form').reset();
+    document.getElementById('topic-subject-key').value = key;
+  }
+
+  document.querySelectorAll('.topic-status-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.status === learnState.topicStatus);
+  });
+
+  document.getElementById('topic-modal-overlay').classList.add('open');
+  document.getElementById('topic-name').focus();
+}
+
+function closeTopicModal() {
+  document.getElementById('topic-modal-overlay').classList.remove('open');
+}
+
+function saveTopic(key, topicId, name, notes, status) {
+  const arr = learnState.subjects[key].topics;
+  if (topicId) {
+    const idx = arr.findIndex(t => t.id === topicId);
+    if (idx !== -1) arr[idx] = { ...arr[idx], name, notes, status };
+  } else {
+    arr.push({ id: uid(), name, notes, status, date: today() });
+  }
+  saveLearn();
+  renderSubjectCards();
+  if (learnState.activeSubject === key) renderSubjectDetail(key);
+  showToast(topicId ? 'Topic updated!' : `Topic added to ${SUBJECTS.find(s=>s.key===key).label}!`);
+}
+
+function deleteTopic(key, topicId) {
+  learnState.subjects[key].topics = learnState.subjects[key].topics.filter(t => t.id !== topicId);
+  saveLearn();
+  renderSubjectCards();
+  if (learnState.activeSubject === key) renderSubjectDetail(key);
+  showToast('Topic deleted', 'error');
 }
 
 // ── Creator State ──────────────────────────────────────
@@ -793,30 +1034,59 @@ function init() {
   // Form submit
   document.getElementById('add-form').addEventListener('submit', e => {
     e.preventDefault();
-    const title = document.getElementById('form-title').value.trim();
-    const notes = document.getElementById('form-notes').value.trim();
-    const repeat = document.getElementById('form-repeat').value;
+    const title   = document.getElementById('form-title').value.trim();
+    const notes   = document.getElementById('form-notes').value.trim();
+    const repeat  = document.getElementById('form-repeat').value;
+    const subject = state.selectedCat === 'learning' ? document.getElementById('form-subject').value : '';
     if (!title) return;
-    addItem(title, state.selectedCat, notes, repeat, state.selectedTiming);
+    addItem(title, state.selectedCat, notes, repeat, state.selectedTiming, subject);
     closeModal();
   });
 
   // Edit form submit
   document.getElementById('edit-form').addEventListener('submit', e => {
     e.preventDefault();
-    const id = document.getElementById('edit-id').value;
-    const title = document.getElementById('edit-title').value.trim();
-    const notes = document.getElementById('edit-notes').value.trim();
-    const repeat = document.getElementById('edit-repeat').value;
+    const id      = document.getElementById('edit-id').value;
+    const cat     = document.getElementById('edit-cat').value;
+    const title   = document.getElementById('edit-title').value.trim();
+    const notes   = document.getElementById('edit-notes').value.trim();
+    const repeat  = document.getElementById('edit-repeat').value;
+    const subject = cat === 'learning' ? document.getElementById('edit-subject').value : '';
     if (!title) return;
-    editItem(id, title, notes, repeat, state.editTiming);
+    editItem(id, title, notes, repeat, state.editTiming, subject);
     closeEditModal();
   });
 
   // Keyboard shortcut
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal(); closeEditModal(); closeInterviewModal(); closePostModal(); }
+    if (e.key === 'Escape') { closeModal(); closeEditModal(); closeInterviewModal(); closePostModal(); closeTopicModal(); closeSubjectPopup(); }
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openModal(); }
+  });
+
+  // Learning subject tracker
+  loadLearn();
+  renderSubjectCards();
+
+  document.getElementById('close-topic-modal').addEventListener('click', closeTopicModal);
+  document.getElementById('topic-modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('topic-modal-overlay')) closeTopicModal();
+  });
+  document.querySelectorAll('.topic-status-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.topic-status-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      learnState.topicStatus = btn.dataset.status;
+    });
+  });
+  document.getElementById('topic-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const key      = document.getElementById('topic-subject-key').value;
+    const topicId  = document.getElementById('topic-id').value || null;
+    const name     = document.getElementById('topic-name').value.trim();
+    const notes    = document.getElementById('topic-notes').value.trim();
+    if (!name) return;
+    saveTopic(key, topicId, name, notes, learnState.topicStatus);
+    closeTopicModal();
   });
 
   // Creator section
