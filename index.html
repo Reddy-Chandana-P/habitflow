@@ -1,40 +1,27 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HabitFlow â€” Track Your Life</title>
+  <title>HabitFlow - Track Your Life</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
   <div class="app">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="logo">
-        <span class="logo-icon">âš¡</span>
+        <span class="logo-mark">HF</span>
         <span class="logo-text">HabitFlow</span>
       </div>
       <nav class="nav">
-        <a href="#" class="nav-item active" data-view="dashboard">
-          <i class="fas fa-th-large"></i><span>Dashboard</span>
-        </a>
-        <a href="#" class="nav-item" data-view="habits">
-          <i class="fas fa-fire"></i><span>Habits</span>
-        </a>
-        <a href="#" class="nav-item" data-view="activities">
-          <i class="fas fa-running"></i><span>Activities</span>
-        </a>
-        <a href="#" class="nav-item" data-view="learning">
-          <i class="fas fa-book-open"></i><span>Learning</span>
-        </a>
-        <a href="#" class="nav-item" data-view="jobs">
-          <i class="fas fa-briefcase"></i><span>Job Hunt</span>
-        </a>
-        <a href="#" class="nav-item" data-view="creator">
-          <i class="fas fa-star"></i><span>Creator</span>
-        </a>
+        <a href="#" class="nav-item active" data-view="dashboard"><i class="fas fa-th-large"></i><span>Dashboard</span></a>
+        <a href="#" class="nav-item" data-view="habits"><i class="fas fa-fire"></i><span>Habits</span></a>
+        <a href="#" class="nav-item" data-view="activities"><i class="fas fa-running"></i><span>Activities</span></a>
+        <a href="#" class="nav-item" data-view="learning"><i class="fas fa-book-open"></i><span>Learning</span></a>
+        <a href="#" class="nav-item" data-view="jobs"><i class="fas fa-briefcase"></i><span>Job Hunt</span></a>
+        <a href="#" class="nav-item" data-view="creator"><i class="fas fa-star"></i><span>Creator</span></a>
       </nav>
       <div class="sidebar-footer">
         <div class="streak-badge">
@@ -43,123 +30,62 @@
         </div>
       </div>
     </aside>
-
-    <!-- Main Content -->
     <main class="main">
-      <!-- Header -->
       <header class="header">
         <div class="header-left">
           <h1 id="view-title">Dashboard</h1>
           <p id="view-date"></p>
         </div>
         <div class="header-right">
-          <button class="btn-add" id="open-modal">
-            <i class="fas fa-plus"></i> Add Item
-          </button>
+          <button class="btn-add" id="open-modal"><i class="fas fa-plus"></i> Add Item</button>
         </div>
       </header>
-
-      <!-- Dashboard View -->
       <section class="view active" id="view-dashboard">
         <div class="stats-grid">
           <div class="stat-card" data-cat="habits">
             <div class="stat-icon"><i class="fas fa-fire"></i></div>
-            <div class="stat-info">
-              <span class="stat-num" id="stat-habits">0</span>
-              <span class="stat-label">Habits Today</span>
-            </div>
-            <div class="stat-ring">
-              <svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill habits-ring" cx="18" cy="18" r="15" id="ring-habits"/></svg>
-            </div>
+            <div class="stat-info"><span class="stat-num" id="stat-habits">0</span><span class="stat-label">Habits Today</span></div>
+            <div class="stat-ring"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill habits-ring" cx="18" cy="18" r="15" id="ring-habits"/></svg></div>
           </div>
           <div class="stat-card" data-cat="activities">
             <div class="stat-icon"><i class="fas fa-running"></i></div>
-            <div class="stat-info">
-              <span class="stat-num" id="stat-activities">0</span>
-              <span class="stat-label">Activities</span>
-            </div>
-            <div class="stat-ring">
-              <svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill activities-ring" cx="18" cy="18" r="15" id="ring-activities"/></svg>
-            </div>
+            <div class="stat-info"><span class="stat-num" id="stat-activities">0</span><span class="stat-label">Activities</span></div>
+            <div class="stat-ring"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill activities-ring" cx="18" cy="18" r="15" id="ring-activities"/></svg></div>
           </div>
           <div class="stat-card" data-cat="learning">
             <div class="stat-icon"><i class="fas fa-book-open"></i></div>
-            <div class="stat-info">
-              <span class="stat-num" id="stat-learning">0</span>
-              <span class="stat-label">Learning</span>
-            </div>
-            <div class="stat-ring">
-              <svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill learning-ring" cx="18" cy="18" r="15" id="ring-learning"/></svg>
-            </div>
+            <div class="stat-info"><span class="stat-num" id="stat-learning">0</span><span class="stat-label">Learning</span></div>
+            <div class="stat-ring"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill learning-ring" cx="18" cy="18" r="15" id="ring-learning"/></svg></div>
           </div>
           <div class="stat-card" data-cat="jobs">
             <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
-            <div class="stat-info">
-              <span class="stat-num" id="stat-jobs">0</span>
-              <span class="stat-label">Job Apps</span>
-            </div>
-            <div class="stat-ring">
-              <svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill jobs-ring" cx="18" cy="18" r="15" id="ring-jobs"/></svg>
-            </div>
+            <div class="stat-info"><span class="stat-num" id="stat-jobs">0</span><span class="stat-label">Job Apps</span></div>
+            <div class="stat-ring"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fill jobs-ring" cx="18" cy="18" r="15" id="ring-jobs"/></svg></div>
           </div>
         </div>
-
         <div class="dashboard-grid">
-          <div class="card today-card">
-            <h3><i class="fas fa-calendar-day"></i> Today's Tasks</h3>
-            <div id="today-list" class="item-list"></div>
-          </div>
-          <div class="card heatmap-card">
-            <h3><i class="fas fa-chart-bar"></i> Weekly Overview</h3>
-            <div id="weekly-chart" class="weekly-chart"></div>
-          </div>
+          <div class="card today-card"><h3><i class="fas fa-calendar-day"></i> Today Tasks</h3><div id="today-list" class="item-list"></div></div>
+          <div class="card heatmap-card"><h3><i class="fas fa-chart-bar"></i> Weekly Overview</h3><div id="weekly-chart" class="weekly-chart"></div></div>
         </div>
-        <div class="card missed-card" style="margin-top:16px">
-          <h3><i class="fas fa-exclamation-circle"></i> Missed Recently</h3>
-          <div id="missed-list" class="item-list"></div>
-        </div>
+        <div class="card missed-card" style="margin-top:16px"><h3><i class="fas fa-exclamation-circle"></i> Missed Recently</h3><div id="missed-list" class="item-list"></div></div>
       </section>
-
-      <!-- Category Views -->
-      <section class="view" id="view-habits">
-        <div class="card full-card">
-          <h3><i class="fas fa-fire"></i> My Habits</h3>
-          <div id="list-habits" class="item-list"></div>
-        </div>
-      </section>
-      <section class="view" id="view-activities">
-        <div class="card full-card">
-          <h3><i class="fas fa-running"></i> Activities</h3>
-          <div id="list-activities" class="item-list"></div>
-        </div>
-      </section>
+      <section class="view" id="view-habits"><div class="card full-card"><h3><i class="fas fa-fire"></i> My Habits</h3><div id="list-habits" class="item-list"></div></div></section>
+      <section class="view" id="view-activities"><div class="card full-card"><h3><i class="fas fa-running"></i> Activities</h3><div id="list-activities" class="item-list"></div></div></section>
       <section class="view" id="view-learning">
         <div class="learning-layout">
-          <!-- Subject Tracker -->
           <div class="learning-subjects">
-            <div class="learning-header-row">
-              <h3 class="section-title"><i class="fas fa-graduation-cap"></i> Subjects</h3>
-            </div>
+            <div class="learning-header-row"><h3 class="section-title"><i class="fas fa-graduation-cap"></i> Subjects</h3></div>
             <div id="subject-cards" class="subject-cards"></div>
           </div>
-          <!-- Right panel: topics + habits -->
           <div class="learning-right">
-            <div class="card full-card" id="subject-detail-panel">
-              <div class="empty-state"><i class="fas fa-hand-point-left"></i><p>Pick a subject to see your topics</p></div>
-            </div>
-            <div class="card full-card" style="margin-top:16px">
-              <h3><i class="fas fa-book-open"></i> Learning Habits</h3>
-              <div id="list-learning" class="item-list"></div>
-            </div>
+            <div class="card full-card" id="subject-detail-panel"><div class="empty-state"><i class="fas fa-hand-point-left"></i><p>Pick a subject to see your topics</p></div></div>
+            <div class="card full-card" style="margin-top:16px"><h3><i class="fas fa-book-open"></i> Learning Habits</h3><div id="list-learning" class="item-list"></div></div>
           </div>
         </div>
       </section>
       <section class="view" id="view-jobs">
         <div class="jobs-layout">
-          <div class="card full-card">
-            <h3><i class="fas fa-briefcase"></i> Job Hunting</h3>
-            <div id="list-jobs" class="item-list"></div>
-          </div>
+          <div class="card full-card"><h3><i class="fas fa-briefcase"></i> Job Hunting</h3><div id="list-jobs" class="item-list"></div></div>
           <div class="card cal-card">
             <div class="cal-header">
               <button class="cal-nav" id="cal-prev"><i class="fas fa-chevron-left"></i></button>
@@ -177,14 +103,9 @@
           </div>
         </div>
       </section>
-
-      <!-- Creator View -->
       <section class="view" id="view-creator">
-        <!-- Stats row -->
         <div class="creator-stats" id="creator-stats-row"></div>
-
         <div class="creator-layout">
-          <!-- Instagram Panel -->
           <div class="card creator-panel">
             <div class="creator-panel-header">
               <div class="platform-badge insta"><i class="fab fa-instagram"></i> Instagram</div>
@@ -192,16 +113,11 @@
             </div>
             <div class="form-group" style="margin-bottom:12px">
               <label>Followers</label>
-              <div class="metric-input-row">
-                <input type="number" id="insta-followers" placeholder="e.g. 1200" min="0" />
-                <button class="btn-save-metric" data-platform="instagram">Save</button>
-              </div>
+              <div class="metric-input-row"><input type="number" id="insta-followers" placeholder="e.g. 1200" min="0" /><button class="btn-save-metric" data-platform="instagram">Save</button></div>
             </div>
             <h4 class="posts-label">Content Log</h4>
             <div id="insta-posts" class="posts-list"></div>
           </div>
-
-          <!-- Substack Panel -->
           <div class="card creator-panel">
             <div class="creator-panel-header">
               <div class="platform-badge substack"><i class="fas fa-envelope-open-text"></i> Substack</div>
@@ -209,10 +125,7 @@
             </div>
             <div class="form-group" style="margin-bottom:12px">
               <label>Subscribers</label>
-              <div class="metric-input-row">
-                <input type="number" id="substack-subscribers" placeholder="e.g. 340" min="0" />
-                <button class="btn-save-metric" data-platform="substack">Save</button>
-              </div>
+              <div class="metric-input-row"><input type="number" id="substack-subscribers" placeholder="e.g. 340" min="0" /><button class="btn-save-metric" data-platform="substack">Save</button></div>
             </div>
             <h4 class="posts-label">Content Log</h4>
             <div id="substack-posts" class="posts-list"></div>
@@ -221,19 +134,11 @@
       </section>
     </main>
   </div>
-
-  <!-- Modal -->
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal">
-      <div class="modal-header">
-        <h2>Add New Item</h2>
-        <button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button>
-      </div>
+      <div class="modal-header"><h2>Add New Item</h2><button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button></div>
       <form id="add-form">
-        <div class="form-group">
-          <label>Title</label>
-          <input type="text" id="form-title" placeholder="e.g. Morning run, Read 30 mins..." required />
-        </div>
+        <div class="form-group"><label>Title</label><input type="text" id="form-title" placeholder="e.g. Morning run, Read 30 mins..." required /></div>
         <div class="form-group">
           <label>Category</label>
           <div class="cat-selector">
@@ -243,10 +148,7 @@
             <button type="button" class="cat-btn" data-cat="jobs"><i class="fas fa-briefcase"></i> Job Hunt</button>
           </div>
         </div>
-        <div class="form-group">
-          <label>Notes (optional)</label>
-          <input type="text" id="form-notes" placeholder="Any extra details..." />
-        </div>
+        <div class="form-group"><label>Notes (optional)</label><input type="text" id="form-notes" placeholder="Any extra details..." /></div>
         <div class="form-group">
           <label>Timing</label>
           <div class="timing-selector">
@@ -270,25 +172,13 @@
       </form>
     </div>
   </div>
-
-  <!-- Edit Modal -->
   <div class="modal-overlay" id="edit-modal-overlay">
     <div class="modal">
-      <div class="modal-header">
-        <h2>Edit Item</h2>
-        <button class="modal-close" id="close-edit-modal"><i class="fas fa-times"></i></button>
-      </div>
+      <div class="modal-header"><h2>Edit Item</h2><button class="modal-close" id="close-edit-modal"><i class="fas fa-times"></i></button></div>
       <form id="edit-form">
-        <input type="hidden" id="edit-id" />
-        <input type="hidden" id="edit-cat" />
-        <div class="form-group">
-          <label>Title</label>
-          <input type="text" id="edit-title" required />
-        </div>
-        <div class="form-group">
-          <label>Notes (optional)</label>
-          <input type="text" id="edit-notes" />
-        </div>
+        <input type="hidden" id="edit-id" /><input type="hidden" id="edit-cat" />
+        <div class="form-group"><label>Title</label><input type="text" id="edit-title" required /></div>
+        <div class="form-group"><label>Notes (optional)</label><input type="text" id="edit-notes" /></div>
         <div class="form-group">
           <label>Timing</label>
           <div class="timing-selector" id="edit-timing-selector">
@@ -312,25 +202,13 @@
       </form>
     </div>
   </div>
-
-  <!-- Interview Modal -->
   <div class="modal-overlay" id="interview-modal-overlay">
     <div class="modal">
-      <div class="modal-header">
-        <h2 id="interview-modal-title">Add Event</h2>
-        <button class="modal-close" id="close-interview-modal"><i class="fas fa-times"></i></button>
-      </div>
+      <div class="modal-header"><h2 id="interview-modal-title">Add Event</h2><button class="modal-close" id="close-interview-modal"><i class="fas fa-times"></i></button></div>
       <form id="interview-form">
-        <input type="hidden" id="interview-id" />
-        <input type="hidden" id="interview-date" />
-        <div class="form-group">
-          <label>Company</label>
-          <input type="text" id="interview-company" placeholder="e.g. Google, Amazon..." required />
-        </div>
-        <div class="form-group">
-          <label>Role</label>
-          <input type="text" id="interview-role" placeholder="e.g. Frontend Engineer..." />
-        </div>
+        <input type="hidden" id="interview-id" /><input type="hidden" id="interview-date" />
+        <div class="form-group"><label>Company</label><input type="text" id="interview-company" placeholder="e.g. Google, Amazon..." required /></div>
+        <div class="form-group"><label>Role</label><input type="text" id="interview-role" placeholder="e.g. Frontend Engineer..." /></div>
         <div class="form-group">
           <label>Type</label>
           <div class="cat-selector">
@@ -338,14 +216,8 @@
             <button type="button" class="ev-type-btn" data-type="assessment"><i class="fas fa-laptop-code"></i> Assessment</button>
           </div>
         </div>
-        <div class="form-group">
-          <label>Time</label>
-          <input type="time" id="interview-time" />
-        </div>
-        <div class="form-group">
-          <label>Notes</label>
-          <input type="text" id="interview-notes" placeholder="Round, platform, contact..." />
-        </div>
+        <div class="form-group"><label>Time</label><input type="time" id="interview-time" /></div>
+        <div class="form-group"><label>Notes</label><input type="text" id="interview-notes" placeholder="Round, platform, contact..." /></div>
         <div class="form-group" id="result-group">
           <label>Result</label>
           <div class="cat-selector">
@@ -358,86 +230,47 @@
       </form>
     </div>
   </div>
-
-  <!-- Topic Modal -->
   <div class="modal-overlay" id="topic-modal-overlay">
     <div class="modal">
-      <div class="modal-header">
-        <h2 id="topic-modal-title">Add Topic</h2>
-        <button class="modal-close" id="close-topic-modal"><i class="fas fa-times"></i></button>
-      </div>
+      <div class="modal-header"><h2 id="topic-modal-title">Add Topic</h2><button class="modal-close" id="close-topic-modal"><i class="fas fa-times"></i></button></div>
       <form id="topic-form">
-        <input type="hidden" id="topic-subject-key" />
-        <input type="hidden" id="topic-id" />
-        <div class="form-group">
-          <label>Topic Name</label>
-          <input type="text" id="topic-name" placeholder="e.g. Binary Search, Normalization..." required />
-        </div>
+        <input type="hidden" id="topic-subject-key" /><input type="hidden" id="topic-id" />
+        <div class="form-group"><label>Topic Name</label><input type="text" id="topic-name" placeholder="e.g. Binary Search, Normalization..." required /></div>
         <div class="form-group">
           <label>Status</label>
           <div class="cat-selector" id="topic-status-selector">
-            <button type="button" class="topic-status-btn active" data-status="not-started">â¬œ Not Started</button>
-            <button type="button" class="topic-status-btn" data-status="in-progress">ðŸ”„ In Progress</button>
-            <button type="button" class="topic-status-btn" data-status="done">âœ… Done</button>
+            <button type="button" class="topic-status-btn active" data-status="not-started">Not Started</button>
+            <button type="button" class="topic-status-btn" data-status="in-progress">In Progress</button>
+            <button type="button" class="topic-status-btn" data-status="done">Done</button>
           </div>
         </div>
-        <div class="form-group">
-          <label>Notes</label>
-          <input type="text" id="topic-notes" placeholder="Resources, page numbers, links..." />
-        </div>
+        <div class="form-group"><label>Notes</label><input type="text" id="topic-notes" placeholder="Resources, page numbers, links..." /></div>
         <button type="submit" class="btn-submit">Save Topic <i class="fas fa-check"></i></button>
       </form>
     </div>
   </div>
-
-  <!-- Creator Post Modal -->
   <div class="modal-overlay" id="post-modal-overlay">
     <div class="modal">
-      <div class="modal-header">
-        <h2 id="post-modal-title">Log Post</h2>
-        <button class="modal-close" id="close-post-modal"><i class="fas fa-times"></i></button>
-      </div>
+      <div class="modal-header"><h2 id="post-modal-title">Log Post</h2><button class="modal-close" id="close-post-modal"><i class="fas fa-times"></i></button></div>
       <form id="post-form">
-        <input type="hidden" id="post-id" />
-        <input type="hidden" id="post-platform" />
-        <div class="form-group">
-          <label>Title / Caption</label>
-          <input type="text" id="post-title" placeholder="What did you post about?" required />
-        </div>
-        <div class="form-group" id="post-type-group">
-          <label>Content Type</label>
-          <div class="cat-selector" id="post-type-selector"></div>
-        </div>
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="post-date" />
-        </div>
-        <div class="form-group">
-          <label>Likes / Opens</label>
-          <input type="number" id="post-likes" placeholder="0" min="0" />
-        </div>
-        <div class="form-group">
-          <label>Notes</label>
-          <input type="text" id="post-notes" placeholder="Ideas, links, thoughts..." />
-        </div>
+        <input type="hidden" id="post-id" /><input type="hidden" id="post-platform" />
+        <div class="form-group"><label>Title / Caption</label><input type="text" id="post-title" placeholder="What did you post about?" required /></div>
+        <div class="form-group" id="post-type-group"><label>Content Type</label><div class="cat-selector" id="post-type-selector"></div></div>
+        <div class="form-group"><label>Date</label><input type="date" id="post-date" /></div>
+        <div class="form-group"><label>Likes / Opens</label><input type="number" id="post-likes" placeholder="0" min="0" /></div>
+        <div class="form-group"><label>Notes</label><input type="text" id="post-notes" placeholder="Ideas, links, thoughts..." /></div>
         <button type="submit" class="btn-submit">Save Post <i class="fas fa-check"></i></button>
       </form>
     </div>
   </div>
-
-  <!-- Subject Picker Popup -->
   <div class="subject-popup-overlay" id="subject-popup-overlay">
     <div class="subject-popup">
-      <div class="subject-popup-title" id="subject-popup-title">📚 What did you study?</div>
+      <div class="subject-popup-title" id="subject-popup-title">What did you study?</div>
       <div class="subject-popup-grid" id="subject-popup-grid"></div>
       <button class="subject-popup-skip" id="subject-popup-skip">Skip</button>
     </div>
   </div>
-
-  <!-- Toast -->
   <div class="toast" id="toast"></div>
-
   <script src="app.js"></script>
 </body>
 </html>
-

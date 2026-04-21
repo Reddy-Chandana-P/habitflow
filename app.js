@@ -357,7 +357,9 @@ function toggleItem(id) {
 
   // If learning item, show subject picker first
   if (item.cat === 'learning') {
-    openSubjectPopup(id);
+    // If item title suggests it's project work, go straight to project picker
+    const isProjectItem = item.title.toLowerCase().includes('project');
+    openSubjectPopup(id, isProjectItem);
     return;
   }
 
@@ -367,7 +369,7 @@ function toggleItem(id) {
   showToast(`"${item.title}" marked done! 🎉`);
 }
 
-function openSubjectPopup(itemId) {
+function openSubjectPopup(itemId, goToProjects = false) {
   const grid = document.getElementById('subject-popup-grid');
 
   function showSubjectGrid() {
@@ -419,7 +421,11 @@ function openSubjectPopup(itemId) {
     }
   }
 
-  showSubjectGrid();
+  if (goToProjects) {
+    showProjectGrid();
+  } else {
+    showSubjectGrid();
+  }
 
   document.getElementById('subject-popup-skip').onclick = () => {
     completeWithSubject(itemId, null, null);
@@ -627,7 +633,11 @@ function renderSubjectDetail(key) {
   const statusOrder = { 'in-progress': 0, 'not-started': 1, 'done': 2 };
   const sorted = [...topics].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
 
-  const statusIcon = { 'not-started': '⬜', 'in-progress': '🔄', 'done': '✅' };
+  const statusIcon = {
+    'not-started': '<i class="fas fa-circle" style="color:var(--border);font-size:0.6rem"></i>',
+    'in-progress':  '<i class="fas fa-spinner" style="color:#fbbf24;font-size:0.75rem"></i>',
+    'done':         '<i class="fas fa-check-circle" style="color:var(--jobs);font-size:0.75rem"></i>'
+  };
   const statusColor = { 'not-started': 'var(--text-muted)', 'in-progress': '#fbbf24', 'done': 'var(--jobs)' };
 
   panel.innerHTML = `
