@@ -133,9 +133,26 @@
         </div>
       </section>
       <section class="view" id="view-jobs">
-        <div class="card full-card">
-          <h3><i class="fas fa-briefcase"></i> Job Hunting</h3>
-          <div id="list-jobs" class="item-list"></div>
+        <div class="jobs-layout">
+          <div class="card full-card">
+            <h3><i class="fas fa-briefcase"></i> Job Hunting</h3>
+            <div id="list-jobs" class="item-list"></div>
+          </div>
+          <div class="card cal-card">
+            <div class="cal-header">
+              <button class="cal-nav" id="cal-prev"><i class="fas fa-chevron-left"></i></button>
+              <span id="cal-month-label"></span>
+              <button class="cal-nav" id="cal-next"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+            <div class="cal-legend">
+              <span><span class="cal-dot interview"></span>Interview</span>
+              <span><span class="cal-dot assessment"></span>Assessment</span>
+              <span><span class="cal-dot passed"></span>Passed</span>
+              <span><span class="cal-dot failed"></span>Failed</span>
+            </div>
+            <div id="cal-day-events"></div>
+          </div>
         </div>
       </section>
     </main>
@@ -223,6 +240,52 @@
           </select>
         </div>
         <button type="submit" class="btn-submit">Save Changes <i class="fas fa-check"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Interview Modal -->
+  <div class="modal-overlay" id="interview-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="interview-modal-title">Add Event</h2>
+        <button class="modal-close" id="close-interview-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="interview-form">
+        <input type="hidden" id="interview-id" />
+        <input type="hidden" id="interview-date" />
+        <div class="form-group">
+          <label>Company</label>
+          <input type="text" id="interview-company" placeholder="e.g. Google, Amazon..." required />
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <input type="text" id="interview-role" placeholder="e.g. Frontend Engineer..." />
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <div class="cat-selector">
+            <button type="button" class="ev-type-btn active" data-type="interview"><i class="fas fa-user-tie"></i> Interview</button>
+            <button type="button" class="ev-type-btn" data-type="assessment"><i class="fas fa-laptop-code"></i> Assessment</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="time" id="interview-time" />
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="interview-notes" placeholder="Round, platform, contact..." />
+        </div>
+        <div class="form-group" id="result-group">
+          <label>Result</label>
+          <div class="cat-selector">
+            <button type="button" class="ev-result-btn active" data-result="pending"><i class="fas fa-hourglass-half"></i> Pending</button>
+            <button type="button" class="ev-result-btn" data-result="passed"><i class="fas fa-check-circle"></i> Passed</button>
+            <button type="button" class="ev-result-btn" data-result="failed"><i class="fas fa-times-circle"></i> Failed</button>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit" id="interview-submit">Save Event <i class="fas fa-check"></i></button>
       </form>
     </div>
   </div>

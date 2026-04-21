@@ -70,6 +70,7 @@ function renderAll() {
   renderCategoryLists();
   renderWeeklyChart();
   updateGlobalStreak();
+  renderCalendar();
 }
 
 function renderStats() {
@@ -338,6 +339,184 @@ function closeEditModal() {
   document.getElementById('edit-modal-overlay').classList.remove('open');
 }
 
+// ── Calendar / Interview State ─────────────────────────
+const CAL_KEY = 'habitflow_calendar';
+
+let calState = {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  events: {},        // { 'YYYY-MM-DD': [ {id, company, role, type, time, notes, result} ] }
+  selectedDate: null,
+  evType: 'interview',
+  evResult: 'pending'
+};
+
+function loadCalEvents() {
+  try {
+    const saved = localStorage.getItem(CAL_KEY);
+    if (saved) calState.events = JSON.parse(saved);
+  } catch(e) { calState.events = {}; }
+}
+
+function saveCalEvents() {
+  localStorage.setItem(CAL_KEY, JSON.stringify(calState.events));
+}
+
+// ── Calendar Render ────────────────────────────────────
+function renderCalendar() {
+  const { year, month, events } = calState;
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent = `${monthNames[month]} ${year}`;
+
+  const grid = document.getElementById('cal-grid');
+  const days = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = today();
+
+  let html = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-cell empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evs = events[dateStr] || [];
+    const isToday = dateStr === todayStr;
+    const isSelected = dateStr === calState.selectedDate;
+
+    const dots = evs.map(ev => `<span class="cal-dot ${ev.result !== 'pending' ? ev.result : ev.type}"></span>`).join('');
+
+    html += `<div class="cal-cell ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${evs.length ? 'has-events' : ''}" data-date="${dateStr}">
+      <span class="cal-day-num">${d}</span>
+      <div class="cal-dots">${dots}</div>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', () => selectCalDate(cell.dataset.date));
+  });
+
+  if (calState.selectedDate) renderDayEvents(calState.selectedDate);
+}
+
+function selectCalDate(dateStr) {
+  calState.selectedDate = dateStr;
+  renderCalendar();
+  renderDayEvents(dateStr);
+}
+
+function renderDayEvents(dateStr) {
+  const container = document.getElementById('cal-day-events');
+  const evs = calState.events[dateStr] || [];
+  const [y, m, d] = dateStr.split('-');
+  const label = new Date(y, m-1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  const resultColors = { pending: '#6b7280', passed: '#34d399', failed: '#f43f5e' };
+  const typeIcons = { interview: 'fa-user-tie', assessment: 'fa-laptop-code' };
+
+  let html = `<div class="day-events-header">
+    <span>${label}</span>
+    <button class="btn-add-event" data-date="${dateStr}"><i class="fas fa-plus"></i> Add</button>
+  </div>`;
+
+  if (evs.length === 0) {
+    html += `<p class="no-events">No events. Click Add to schedule one.</p>`;
+  } else {
+    html += evs.map(ev => `
+      <div class="cal-event-item">
+        <div class="cal-event-icon ${ev.type}"><i class="fas ${typeIcons[ev.type]}"></i></div>
+        <div class="cal-event-body">
+          <div class="cal-event-company">${escHtml(ev.company)}</div>
+          <div class="cal-event-meta">
+            ${ev.role ? escHtml(ev.role) + ' · ' : ''}
+            ${ev.time ? ev.time + ' · ' : ''}
+            ${ev.notes ? escHtml(ev.notes) : ''}
+          </div>
+        </div>
+        <div class="cal-event-actions">
+          <span class="ev-result-badge" style="color:${resultColors[ev.result]}">${ev.result}</span>
+          <button class="item-btn edit-ev-btn" data-date="${dateStr}" data-id="${ev.id}" title="Edit"><i class="fas fa-pen"></i></button>
+          <button class="item-btn delete-ev-btn" data-date="${dateStr}" data-id="${ev.id}" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  container.innerHTML = html;
+
+  container.querySelector('.btn-add-event').addEventListener('click', () => openInterviewModal(dateStr, null));
+  container.querySelectorAll('.edit-ev-btn').forEach(btn => {
+    btn.addEventListener('click', () => openInterviewModal(btn.dataset.date, btn.dataset.id));
+  });
+  container.querySelectorAll('.delete-ev-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteCalEvent(btn.dataset.date, btn.dataset.id));
+  });
+}
+
+// ── Interview Modal ────────────────────────────────────
+function openInterviewModal(dateStr, eventId) {
+  const overlay = document.getElementById('interview-modal-overlay');
+  calState.evType = 'interview';
+  calState.evResult = 'pending';
+
+  document.getElementById('interview-date').value = dateStr;
+  document.getElementById('interview-id').value = eventId || '';
+
+  const [y, m, d] = dateStr.split('-');
+  const label = new Date(y, m-1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  if (eventId) {
+    const ev = (calState.events[dateStr] || []).find(e => e.id === eventId);
+    if (!ev) return;
+    document.getElementById('interview-modal-title').textContent = `Edit Event — ${label}`;
+    document.getElementById('interview-company').value = ev.company;
+    document.getElementById('interview-role').value = ev.role || '';
+    document.getElementById('interview-time').value = ev.time || '';
+    document.getElementById('interview-notes').value = ev.notes || '';
+    calState.evType = ev.type;
+    calState.evResult = ev.result;
+  } else {
+    document.getElementById('interview-modal-title').textContent = `Add Event — ${label}`;
+    document.getElementById('interview-form').reset();
+    document.getElementById('interview-date').value = dateStr;
+  }
+
+  // Sync type buttons
+  document.querySelectorAll('.ev-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === calState.evType));
+  document.querySelectorAll('.ev-result-btn').forEach(b => b.classList.toggle('active', b.dataset.result === calState.evResult));
+
+  overlay.classList.add('open');
+  document.getElementById('interview-company').focus();
+}
+
+function closeInterviewModal() {
+  document.getElementById('interview-modal-overlay').classList.remove('open');
+}
+
+function saveCalEvent(dateStr, eventId, data) {
+  if (!calState.events[dateStr]) calState.events[dateStr] = [];
+  if (eventId) {
+    const idx = calState.events[dateStr].findIndex(e => e.id === eventId);
+    if (idx !== -1) calState.events[dateStr][idx] = { ...calState.events[dateStr][idx], ...data };
+  } else {
+    calState.events[dateStr].push({ id: uid(), ...data });
+  }
+  saveCalEvents();
+  renderCalendar();
+  showToast(eventId ? 'Event updated!' : 'Event added!');
+}
+
+function deleteCalEvent(dateStr, eventId) {
+  if (!calState.events[dateStr]) return;
+  calState.events[dateStr] = calState.events[dateStr].filter(e => e.id !== eventId);
+  if (calState.events[dateStr].length === 0) delete calState.events[dateStr];
+  saveCalEvents();
+  renderCalendar();
+  showToast('Event deleted', 'error');
+}
+
 // ── Escape HTML ────────────────────────────────────────
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -425,8 +604,57 @@ function init() {
 
   // Keyboard shortcut
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') { closeModal(); closeEditModal(); closeInterviewModal(); }
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openModal(); }
+  });
+
+  // Calendar nav
+  loadCalEvents();
+  document.getElementById('cal-prev').addEventListener('click', () => {
+    calState.month--;
+    if (calState.month < 0) { calState.month = 11; calState.year--; }
+    renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', () => {
+    calState.month++;
+    if (calState.month > 11) { calState.month = 0; calState.year++; }
+    renderCalendar();
+  });
+
+  // Interview modal type/result buttons
+  document.querySelectorAll('.ev-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ev-type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      calState.evType = btn.dataset.type;
+    });
+  });
+  document.querySelectorAll('.ev-result-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ev-result-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      calState.evResult = btn.dataset.result;
+    });
+  });
+
+  // Interview modal close
+  document.getElementById('close-interview-modal').addEventListener('click', closeInterviewModal);
+  document.getElementById('interview-modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('interview-modal-overlay')) closeInterviewModal();
+  });
+
+  // Interview form submit
+  document.getElementById('interview-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const dateStr = document.getElementById('interview-date').value;
+    const eventId = document.getElementById('interview-id').value || null;
+    const company = document.getElementById('interview-company').value.trim();
+    const role = document.getElementById('interview-role').value.trim();
+    const time = document.getElementById('interview-time').value;
+    const notes = document.getElementById('interview-notes').value.trim();
+    if (!company) return;
+    saveCalEvent(dateStr, eventId, { company, role, time, notes, type: calState.evType, result: calState.evResult });
+    closeInterviewModal();
   });
 
   // Seed demo data if empty
