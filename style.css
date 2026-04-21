@@ -488,3 +488,28 @@ body {
   .dashboard-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Timing selector */
+.timing-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.timing-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.timing-btn:hover { border-color: var(--accent); color: var(--text); }
+.timing-btn.active { background: rgba(99,102,241,0.2); border-color: var(--accent); color: var(--accent); }
+
+/* Edit button color */
+.item-btn.edit-btn:hover { background: var(--border); color: var(--accent); }

@@ -167,6 +167,15 @@
           <input type="text" id="form-notes" placeholder="Any extra details..." />
         </div>
         <div class="form-group">
+          <label>Timing</label>
+          <div class="timing-selector">
+            <button type="button" class="timing-btn active" data-timing="anytime"><i class="fas fa-clock"></i> Anytime</button>
+            <button type="button" class="timing-btn" data-timing="morning"><i class="fas fa-sun"></i> Morning</button>
+            <button type="button" class="timing-btn" data-timing="afternoon"><i class="fas fa-cloud-sun"></i> Afternoon</button>
+            <button type="button" class="timing-btn" data-timing="evening"><i class="fas fa-moon"></i> Evening</button>
+          </div>
+        </div>
+        <div class="form-group">
           <label>Repeat</label>
           <select id="form-repeat">
             <option value="daily">Daily</option>
@@ -175,6 +184,45 @@
           </select>
         </div>
         <button type="submit" class="btn-submit">Add Item <i class="fas fa-arrow-right"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="edit-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Edit Item</h2>
+        <button class="modal-close" id="close-edit-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="edit-form">
+        <input type="hidden" id="edit-id" />
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="edit-title" required />
+        </div>
+        <div class="form-group">
+          <label>Notes (optional)</label>
+          <input type="text" id="edit-notes" />
+        </div>
+        <div class="form-group">
+          <label>Timing</label>
+          <div class="timing-selector" id="edit-timing-selector">
+            <button type="button" class="timing-btn active" data-timing="anytime"><i class="fas fa-clock"></i> Anytime</button>
+            <button type="button" class="timing-btn" data-timing="morning"><i class="fas fa-sun"></i> Morning</button>
+            <button type="button" class="timing-btn" data-timing="afternoon"><i class="fas fa-cloud-sun"></i> Afternoon</button>
+            <button type="button" class="timing-btn" data-timing="evening"><i class="fas fa-moon"></i> Evening</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Repeat</label>
+          <select id="edit-repeat">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="once">One-time</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-submit">Save Changes <i class="fas fa-check"></i></button>
       </form>
     </div>
   </div>

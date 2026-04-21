@@ -122,10 +122,13 @@ function renderCategoryLists() {
   });
 }
 
+const timingIcons = { morning: '🌅', afternoon: '☀️', evening: '🌙', anytime: '🕐' };
+
 function renderItem(item, compact = false) {
   const todayStr = today();
   const isDone = item.completedDates && item.completedDates.includes(todayStr);
   const streak = calcStreak(item);
+  const timingLabel = item.timing && item.timing !== 'anytime' ? ` · ${timingIcons[item.timing]} ${item.timing}` : '';
 
   return `
     <div class="item ${isDone ? 'done' : ''}" data-id="${item.id}">
@@ -137,11 +140,13 @@ function renderItem(item, compact = false) {
         <div class="item-meta">
           <span style="color:${catColors[item.cat]}">${item.cat}</span>
           ${item.notes ? ` · ${escHtml(item.notes)}` : ''}
+          ${timingLabel}
           ${streak > 1 ? ` · 🔥 ${streak} day streak` : ''}
           · ${item.repeat}
         </div>
       </div>
       <div class="item-actions">
+        <button class="item-btn edit-btn" data-id="${item.id}" title="Edit"><i class="fas fa-pen"></i></button>
         <button class="item-btn delete-btn" data-id="${item.id}" title="Delete"><i class="fas fa-trash"></i></button>
       </div>
       <div class="item-cat-dot" style="background:${catColors[item.cat]}"></div>
@@ -152,6 +157,9 @@ function renderItem(item, compact = false) {
 function attachItemEvents(container) {
   container.querySelectorAll('.item-check').forEach(btn => {
     btn.addEventListener('click', () => toggleItem(btn.dataset.id));
+  });
+  container.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openEditModal(btn.dataset.id));
   });
   container.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', () => deleteItem(btn.dataset.id));
@@ -247,13 +255,14 @@ function deleteItem(id) {
   showToast(`Deleted "${item.title}"`, 'error');
 }
 
-function addItem(title, cat, notes, repeat) {
+function addItem(title, cat, notes, repeat, timing) {
   const item = {
     id: uid(),
     title,
     cat,
     notes,
     repeat,
+    timing: timing || 'anytime',
     createdDate: today(),
     completedDates: []
   };
@@ -261,6 +270,18 @@ function addItem(title, cat, notes, repeat) {
   saveState();
   renderAll();
   showToast(`Added "${title}" to ${cat}!`);
+}
+
+function editItem(id, title, notes, repeat, timing) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+  item.title = title;
+  item.notes = notes;
+  item.repeat = repeat;
+  item.timing = timing || 'anytime';
+  saveState();
+  renderAll();
+  showToast(`"${title}" updated!`);
 }
 
 // ── Navigation ─────────────────────────────────────────
@@ -289,7 +310,32 @@ function closeModal() {
   document.getElementById('add-form').reset();
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.cat-btn[data-cat="habits"]').classList.add('active');
+  document.querySelectorAll('.timing-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.timing-btn[data-timing="anytime"]').classList.add('active');
   state.selectedCat = 'habits';
+  state.selectedTiming = 'anytime';
+}
+
+function openEditModal(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('edit-id').value = item.id;
+  document.getElementById('edit-title').value = item.title;
+  document.getElementById('edit-notes').value = item.notes || '';
+  document.getElementById('edit-repeat').value = item.repeat;
+
+  const timing = item.timing || 'anytime';
+  document.querySelectorAll('#edit-timing-selector .timing-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.timing === timing);
+  });
+  state.editTiming = timing;
+
+  document.getElementById('edit-modal-overlay').classList.add('open');
+  document.getElementById('edit-title').focus();
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal-overlay').classList.remove('open');
 }
 
 // ── Escape HTML ────────────────────────────────────────
@@ -319,12 +365,38 @@ function init() {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
 
+  // Edit modal close
+  document.getElementById('close-edit-modal').addEventListener('click', closeEditModal);
+  document.getElementById('edit-modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('edit-modal-overlay')) closeEditModal();
+  });
+
   // Category buttons
   document.querySelectorAll('.cat-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.selectedCat = btn.dataset.cat;
+    });
+  });
+
+  // Timing buttons (add modal)
+  state.selectedTiming = 'anytime';
+  document.querySelectorAll('#modal-overlay .timing-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#modal-overlay .timing-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.selectedTiming = btn.dataset.timing;
+    });
+  });
+
+  // Timing buttons (edit modal)
+  state.editTiming = 'anytime';
+  document.querySelectorAll('#edit-timing-selector .timing-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#edit-timing-selector .timing-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.editTiming = btn.dataset.timing;
     });
   });
 
@@ -335,8 +407,20 @@ function init() {
     const notes = document.getElementById('form-notes').value.trim();
     const repeat = document.getElementById('form-repeat').value;
     if (!title) return;
-    addItem(title, state.selectedCat, notes, repeat);
+    addItem(title, state.selectedCat, notes, repeat, state.selectedTiming);
     closeModal();
+  });
+
+  // Edit form submit
+  document.getElementById('edit-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const id = document.getElementById('edit-id').value;
+    const title = document.getElementById('edit-title').value.trim();
+    const notes = document.getElementById('edit-notes').value.trim();
+    const repeat = document.getElementById('edit-repeat').value;
+    if (!title) return;
+    editItem(id, title, notes, repeat, state.editTiming);
+    closeEditModal();
   });
 
   // Keyboard shortcut
