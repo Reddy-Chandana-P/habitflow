@@ -32,6 +32,9 @@
         <a href="#" class="nav-item" data-view="jobs">
           <i class="fas fa-briefcase"></i><span>Job Hunt</span>
         </a>
+        <a href="#" class="nav-item" data-view="creator">
+          <i class="fas fa-star"></i><span>Creator</span>
+        </a>
       </nav>
       <div class="sidebar-footer">
         <div class="streak-badge">
@@ -152,6 +155,48 @@
               <span><span class="cal-dot failed"></span>Failed</span>
             </div>
             <div id="cal-day-events"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Creator View -->
+      <section class="view" id="view-creator">
+        <!-- Stats row -->
+        <div class="creator-stats" id="creator-stats-row"></div>
+
+        <div class="creator-layout">
+          <!-- Instagram Panel -->
+          <div class="card creator-panel">
+            <div class="creator-panel-header">
+              <div class="platform-badge insta"><i class="fab fa-instagram"></i> Instagram</div>
+              <button class="btn-add-post" data-platform="instagram"><i class="fas fa-plus"></i> Log Post</button>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Followers</label>
+              <div class="metric-input-row">
+                <input type="number" id="insta-followers" placeholder="e.g. 1200" min="0" />
+                <button class="btn-save-metric" data-platform="instagram">Save</button>
+              </div>
+            </div>
+            <h4 class="posts-label">Content Log</h4>
+            <div id="insta-posts" class="posts-list"></div>
+          </div>
+
+          <!-- Substack Panel -->
+          <div class="card creator-panel">
+            <div class="creator-panel-header">
+              <div class="platform-badge substack"><i class="fas fa-envelope-open-text"></i> Substack</div>
+              <button class="btn-add-post" data-platform="substack"><i class="fas fa-plus"></i> Log Post</button>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Subscribers</label>
+              <div class="metric-input-row">
+                <input type="number" id="substack-subscribers" placeholder="e.g. 340" min="0" />
+                <button class="btn-save-metric" data-platform="substack">Save</button>
+              </div>
+            </div>
+            <h4 class="posts-label">Content Log</h4>
+            <div id="substack-posts" class="posts-list"></div>
           </div>
         </div>
       </section>
@@ -286,6 +331,41 @@
           </div>
         </div>
         <button type="submit" class="btn-submit" id="interview-submit">Save Event <i class="fas fa-check"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Creator Post Modal -->
+  <div class="modal-overlay" id="post-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="post-modal-title">Log Post</h2>
+        <button class="modal-close" id="close-post-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="post-form">
+        <input type="hidden" id="post-id" />
+        <input type="hidden" id="post-platform" />
+        <div class="form-group">
+          <label>Title / Caption</label>
+          <input type="text" id="post-title" placeholder="What did you post about?" required />
+        </div>
+        <div class="form-group" id="post-type-group">
+          <label>Content Type</label>
+          <div class="cat-selector" id="post-type-selector"></div>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="post-date" />
+        </div>
+        <div class="form-group">
+          <label>Likes / Opens</label>
+          <input type="number" id="post-likes" placeholder="0" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="post-notes" placeholder="Ideas, links, thoughts..." />
+        </div>
+        <button type="submit" class="btn-submit">Save Post <i class="fas fa-check"></i></button>
       </form>
     </div>
   </div>
