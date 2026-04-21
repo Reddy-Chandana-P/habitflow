@@ -54,6 +54,63 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
+// Calculate missed days for an item
+function getMissedDays(item) {
+  if (!item.repeat || item.repeat === 'once') return [];
+  
+  const todayStr = today();
+  const startDate = new Date(item.createdDate);
+  const endDate = new Date(todayStr);
+  endDate.setDate(endDate.getDate() - 1); // Don't count today as missed yet
+  
+  const missed = [];
+  const completed = item.completedDates || [];
+  
+  let current = new Date(startDate);
+  while (current <= endDate) {
+    const dateStr = current.toISOString().split('T')[0];
+    
+    // Check if this date should have been completed based on repeat type
+    let shouldComplete = false;
+    if (item.repeat === 'daily') {
+      shouldComplete = true;
+    } else if (item.repeat === 'weekly') {
+      const dayOfWeek = current.getDay();
+      const startDayOfWeek = startDate.getDay();
+      shouldComplete = dayOfWeek === startDayOfWeek;
+    } else if (item.repeat === 'once-a-week') {
+      const weeksSinceStart = Math.floor((current - startDate) / (7 * 24 * 60 * 60 * 1000));
+      const startOfWeek = new Date(startDate);
+      startOfWeek.setDate(startDate.getDate() + weeksSinceStart * 7);
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      
+      // Check if any day in this week was completed
+      const weekCompleted = completed.some(d => {
+        const cd = new Date(d);
+        return cd >= startOfWeek && cd <= endOfWeek;
+      });
+      
+      // Only mark last day of week as missed if nothing was done
+      if (current.getTime() === endOfWeek.getTime() && !weekCompleted) {
+        shouldComplete = true;
+      }
+    } else if (item.repeat === 'monthly') {
+      const dayOfMonth = current.getDate();
+      const startDayOfMonth = startDate.getDate();
+      shouldComplete = dayOfMonth === startDayOfMonth;
+    }
+    
+    if (shouldComplete && !completed.includes(dateStr)) {
+      missed.push(dateStr);
+    }
+    
+    current.setDate(current.getDate() + 1);
+  }
+  
+  return missed;
+}
+
 // ── Toast ──────────────────────────────────────────────
 function showToast(msg, type = 'success') {
   const t = document.getElementById('toast');
@@ -67,12 +124,57 @@ function showToast(msg, type = 'success') {
 function renderAll() {
   renderStats();
   renderTodayList();
+  renderMissed();
   renderCategoryLists();
   renderWeeklyChart();
   updateGlobalStreak();
   renderCalendar();
   renderCreator();
   renderSubjectCards();
+}
+
+function renderMissed() {
+  const container = document.getElementById('missed-list');
+  if (!container) return;
+
+  // Collect items with missed days in the last 7 days
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffStr = cutoff.toISOString().split('T')[0];
+
+  const missedItems = state.items
+    .filter(i => i.repeat !== 'once')
+    .map(i => {
+      const missed = getMissedDays(i).filter(d => d >= cutoffStr);
+      return { item: i, missed };
+    })
+    .filter(x => x.missed.length > 0)
+    .sort((a, b) => b.missed.length - a.missed.length);
+
+  if (missedItems.length === 0) {
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><p>No missed habits in the last 7 days. Keep it up!</p></div>`;
+    return;
+  }
+
+  container.innerHTML = missedItems.map(({ item, missed }) => {
+    const lastMissed = missed[missed.length - 1];
+    const [y, m, d] = lastMissed.split('-');
+    const label = new Date(y, m-1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `
+      <div class="item missed-item">
+        <div class="missed-x">✗</div>
+        <div class="item-body">
+          <div class="item-title">${escHtml(item.title)}</div>
+          <div class="item-meta">
+            <span style="color:${catColors[item.cat]}">${item.cat}</span>
+            · <span class="missed-count">${missed.length} missed this week</span>
+            · last missed ${label}
+          </div>
+        </div>
+        <div class="item-cat-dot" style="background:${catColors[item.cat]}"></div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderStats() {
@@ -135,6 +237,8 @@ function renderItem(item, compact = false) {
   const subjectLabel = item.cat === 'learning' && item.subject
     ? ` · 📚 ${SUBJECTS.find(s => s.key === item.subject)?.label || item.subject}`
     : '';
+  const missed = item.repeat !== 'once' ? getMissedDays(item) : [];
+  const missedLabel = missed.length > 0 ? ` · <span class="missed-badge">❌ ${missed.length} missed</span>` : '';
 
   return `
     <div class="item ${isDone ? 'done' : ''}" data-id="${item.id}">
@@ -149,6 +253,7 @@ function renderItem(item, compact = false) {
           ${timingLabel}
           ${subjectLabel}
           ${streak > 1 ? ` · 🔥 ${streak} day streak` : ''}
+          ${missedLabel}
           · ${item.repeat}
         </div>
       </div>

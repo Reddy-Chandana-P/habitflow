@@ -1122,3 +1122,31 @@ body {
   transition: all 0.2s;
 }
 .subject-popup-skip:hover { background: var(--surface2); color: var(--text); }
+
+/* ── Missed Habits ── */
+.missed-badge {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.missed-item {
+  border-left: 3px solid var(--danger) !important;
+}
+
+.missed-x {
+  width: 24px; height: 24px;
+  border-radius: 8px;
+  background: rgba(244,63,94,0.15);
+  color: var(--danger);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.missed-count {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.missed-card h3 i { color: var(--danger); }
