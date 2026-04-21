@@ -369,7 +369,6 @@ function toggleItem(id) {
 
 function openSubjectPopup(itemId) {
   const grid = document.getElementById('subject-popup-grid');
-  document.getElementById('topic-modal-title');
 
   function showSubjectGrid() {
     document.getElementById('subject-popup-title').textContent = '📚 What did you study?';
