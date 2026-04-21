@@ -369,22 +369,61 @@ function toggleItem(id) {
 
 function openSubjectPopup(itemId) {
   const grid = document.getElementById('subject-popup-grid');
-  grid.innerHTML = SUBJECTS.map(s => `
-    <button class="subj-pick-btn" data-key="${s.key}" style="--sc:${s.color}">
-      <i class="fas ${s.icon}"></i>
-      <span>${s.label}</span>
-    </button>
-  `).join('');
+  document.getElementById('topic-modal-title');
 
-  grid.querySelectorAll('.subj-pick-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      completeWithSubject(itemId, btn.dataset.key);
-      closeSubjectPopup();
+  function showSubjectGrid() {
+    document.getElementById('subject-popup-title').textContent = '📚 What did you study?';
+    grid.innerHTML = SUBJECTS.map(s => `
+      <button class="subj-pick-btn" data-key="${s.key}" style="--sc:${s.color}">
+        <i class="fas ${s.icon}"></i>
+        <span>${s.label}</span>
+      </button>
+    `).join('');
+
+    grid.querySelectorAll('.subj-pick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.key === 'projects') {
+          showProjectGrid();
+        } else {
+          completeWithSubject(itemId, btn.dataset.key, null);
+          closeSubjectPopup();
+        }
+      });
     });
-  });
+  }
+
+  function showProjectGrid() {
+    const projects = (learnState.subjects['projects'] && learnState.subjects['projects'].topics) || [];
+    document.getElementById('subject-popup-title').textContent = '🗂️ Which project?';
+
+    if (projects.length === 0) {
+      grid.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:12px 0;grid-column:1/-1">No projects added yet. Add them in the Learning → Projects section.</p>`;
+    } else {
+      grid.innerHTML = `
+        <button class="subj-pick-btn back-btn" style="--sc:#6b7280;grid-column:1/-1">
+          <i class="fas fa-arrow-left"></i><span>Back to subjects</span>
+        </button>
+        ${projects.map(p => `
+          <button class="subj-pick-btn" data-project-id="${p.id}" data-project-name="${escHtml(p.name)}" style="--sc:#4ade80">
+            <i class="fas fa-folder-open" style="color:#4ade80"></i>
+            <span>${escHtml(p.name)}</span>
+          </button>
+        `).join('')}
+      `;
+      grid.querySelector('.back-btn').addEventListener('click', showSubjectGrid);
+      grid.querySelectorAll('.subj-pick-btn:not(.back-btn)').forEach(btn => {
+        btn.addEventListener('click', () => {
+          completeWithSubject(itemId, 'projects', btn.dataset.projectName);
+          closeSubjectPopup();
+        });
+      });
+    }
+  }
+
+  showSubjectGrid();
 
   document.getElementById('subject-popup-skip').onclick = () => {
-    completeWithSubject(itemId, null);
+    completeWithSubject(itemId, null, null);
     closeSubjectPopup();
   };
 
@@ -395,15 +434,16 @@ function closeSubjectPopup() {
   document.getElementById('subject-popup-overlay').classList.remove('open');
 }
 
-function completeWithSubject(itemId, subjectKey) {
+function completeWithSubject(itemId, subjectKey, projectName) {
   const item = state.items.find(i => i.id === itemId);
   if (!item) return;
   const todayStr = today();
   if (!item.completedDates) item.completedDates = [];
   item.completedDates.push(todayStr);
 
-  // Log to subject tracker if a subject was picked
-  if (subjectKey && learnState.subjects[subjectKey]) {
+  if (subjectKey === 'projects' && projectName) {
+    showToast(`"${item.title}" done · logged to ${projectName}! 🎉`);
+  } else if (subjectKey && learnState.subjects[subjectKey]) {
     const subj = SUBJECTS.find(s => s.key === subjectKey);
     showToast(`"${item.title}" done · logged to ${subj.label}! 🎉`);
   } else {
@@ -441,14 +481,13 @@ function addItem(title, cat, notes, repeat, timing, subject) {
   showToast(`Added "${title}" to ${cat}!`);
 }
 
-function editItem(id, title, notes, repeat, timing, subject) {
+function editItem(id, title, notes, repeat, timing) {
   const item = state.items.find(i => i.id === id);
   if (!item) return;
   item.title = title;
   item.notes = notes;
   item.repeat = repeat;
   item.timing = timing || 'anytime';
-  if (item.cat === 'learning') item.subject = subject || '';
   saveState();
   renderAll();
   showToast(`"${title}" updated!`);
@@ -495,14 +534,6 @@ function openEditModal(id) {
   document.getElementById('edit-title').value = item.title;
   document.getElementById('edit-notes').value = item.notes || '';
   document.getElementById('edit-repeat').value = item.repeat;
-
-  const subjGroup = document.getElementById('edit-subject-group');
-  if (item.cat === 'learning') {
-    subjGroup.style.display = 'block';
-    document.getElementById('edit-subject').value = item.subject || '';
-  } else {
-    subjGroup.style.display = 'none';
-  }
 
   const timing = item.timing || 'anytime';
   document.querySelectorAll('#edit-timing-selector .timing-btn').forEach(b => {
@@ -1139,26 +1170,23 @@ function init() {
   // Form submit
   document.getElementById('add-form').addEventListener('submit', e => {
     e.preventDefault();
-    const title   = document.getElementById('form-title').value.trim();
-    const notes   = document.getElementById('form-notes').value.trim();
-    const repeat  = document.getElementById('form-repeat').value;
-    const subject = state.selectedCat === 'learning' ? document.getElementById('form-subject').value : '';
+    const title  = document.getElementById('form-title').value.trim();
+    const notes  = document.getElementById('form-notes').value.trim();
+    const repeat = document.getElementById('form-repeat').value;
     if (!title) return;
-    addItem(title, state.selectedCat, notes, repeat, state.selectedTiming, subject);
+    addItem(title, state.selectedCat, notes, repeat, state.selectedTiming);
     closeModal();
   });
 
   // Edit form submit
   document.getElementById('edit-form').addEventListener('submit', e => {
     e.preventDefault();
-    const id      = document.getElementById('edit-id').value;
-    const cat     = document.getElementById('edit-cat').value;
-    const title   = document.getElementById('edit-title').value.trim();
-    const notes   = document.getElementById('edit-notes').value.trim();
-    const repeat  = document.getElementById('edit-repeat').value;
-    const subject = cat === 'learning' ? document.getElementById('edit-subject').value : '';
+    const id     = document.getElementById('edit-id').value;
+    const title  = document.getElementById('edit-title').value.trim();
+    const notes  = document.getElementById('edit-notes').value.trim();
+    const repeat = document.getElementById('edit-repeat').value;
     if (!title) return;
-    editItem(id, title, notes, repeat, state.editTiming, subject);
+    editItem(id, title, notes, repeat, state.editTiming);
     closeEditModal();
   });
 
