@@ -137,44 +137,72 @@ function renderMissed() {
   const container = document.getElementById('missed-list');
   if (!container) return;
 
-  // Collect items with missed days in the last 7 days
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - 7);
   const cutoffStr = cutoff.toISOString().split('T')[0];
 
-  const missedItems = state.items
+  // Build a map: { dateStr -> [items missed on that day] }
+  const byDate = {};
+  state.items
     .filter(i => i.repeat !== 'once')
-    .map(i => {
+    .forEach(i => {
       const missed = getMissedDays(i).filter(d => d >= cutoffStr);
-      return { item: i, missed };
-    })
-    .filter(x => x.missed.length > 0)
-    .sort((a, b) => b.missed.length - a.missed.length);
+      missed.forEach(d => {
+        if (!byDate[d]) byDate[d] = [];
+        byDate[d].push(i);
+      });
+    });
 
-  if (missedItems.length === 0) {
+  const dates = Object.keys(byDate).sort((a, b) => b.localeCompare(a)); // newest first
+
+  if (dates.length === 0) {
     container.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><p>No missed habits in the last 7 days. Keep it up!</p></div>`;
     return;
   }
 
-  container.innerHTML = missedItems.map(({ item, missed }) => {
-    const lastMissed = missed[missed.length - 1];
-    const [y, m, d] = lastMissed.split('-');
-    const label = new Date(y, m-1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    return `
-      <div class="item missed-item">
-        <div class="missed-x">✗</div>
+  container.innerHTML = dates.map(dateStr => {
+    const [y, m, d] = dateStr.split('-');
+    const label = new Date(y, m-1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const items = byDate[dateStr];
+    const itemsHtml = items.map(item => `
+      <div class="missed-day-item">
+        <div class="missed-x">&#x2717;</div>
         <div class="item-body">
           <div class="item-title">${escHtml(item.title)}</div>
-          <div class="item-meta">
-            <span style="color:${catColors[item.cat]}">${item.cat}</span>
-            · <span class="missed-count">${missed.length} missed this week</span>
-            · last missed ${label}
-          </div>
+          <div class="item-meta"><span style="color:${catColors[item.cat]}">${item.cat}</span> &middot; ${item.repeat}</div>
         </div>
         <div class="item-cat-dot" style="background:${catColors[item.cat]}"></div>
       </div>
+    `).join('');
+
+    return `
+      <div class="missed-date-row" data-date="${dateStr}">
+        <div class="missed-date-header">
+          <div class="missed-date-label">
+            <i class="fas fa-calendar-times" style="color:var(--danger)"></i>
+            ${label}
+          </div>
+          <div class="missed-date-right">
+            <span class="missed-count">${items.length} missed</span>
+            <i class="fas fa-chevron-down missed-chevron"></i>
+          </div>
+        </div>
+        <div class="missed-date-items" style="display:none">${itemsHtml}</div>
+      </div>
     `;
   }).join('');
+
+  // Click to expand/collapse
+  container.querySelectorAll('.missed-date-row').forEach(row => {
+    row.querySelector('.missed-date-header').addEventListener('click', () => {
+      const panel = row.querySelector('.missed-date-items');
+      const chevron = row.querySelector('.missed-chevron');
+      const open = panel.style.display !== 'none';
+      panel.style.display = open ? 'none' : 'block';
+      chevron.style.transform = open ? '' : 'rotate(180deg)';
+      row.classList.toggle('expanded', !open);
+    });
+  });
 }
 
 function renderStats() {
