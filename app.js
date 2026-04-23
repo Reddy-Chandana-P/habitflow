@@ -220,6 +220,13 @@ function renderStats() {
     const ring = document.getElementById(`ring-${cat}`);
     const circumference = 94.2;
     ring.style.strokeDashoffset = circumference - (pct * circumference);
+
+    // Make card clickable
+    const card = document.querySelector(`.stat-card[data-cat="${cat}"]`);
+    if (card) {
+      card.style.cursor = 'pointer';
+      card.onclick = () => switchView(cat === 'jobs' ? 'jobs' : cat);
+    }
   });
 }
 
