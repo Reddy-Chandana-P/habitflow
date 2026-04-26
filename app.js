@@ -131,6 +131,7 @@ function renderAll() {
   renderCalendar();
   renderCreator();
   renderSubjectCards();
+  renderAnalytics();
 }
 
 function renderMissed() {
@@ -544,9 +545,9 @@ function switchView(view) {
   if (viewEl) viewEl.classList.add('active');
   if (navEl) navEl.classList.add('active');
 
-  const titles = { dashboard: 'Dashboard', habits: 'Habits', activities: 'Activities', learning: 'Learning', jobs: 'Job Hunting', creator: 'Creator' };
+  const titles = { dashboard: 'Dashboard', habits: 'Habits', activities: 'Activities', learning: 'Learning', jobs: 'Job Hunting', creator: 'Creator', analytics: 'Analytics' };
   document.getElementById('view-title').textContent = titles[view] || view;
-  document.getElementById('open-modal').style.display = view === 'creator' ? 'none' : 'flex';
+  document.getElementById('open-modal').style.display = (view === 'creator' || view === 'analytics') ? 'none' : 'flex';
 }
 
 // ── Modal ──────────────────────────────────────────────
@@ -1147,6 +1148,196 @@ function deleteCalEvent(dateStr, eventId) {
   saveCalEvents();
   renderCalendar();
   showToast('Event deleted', 'error');
+}
+
+// ── Analytics ──────────────────────────────────────────
+function renderAnalytics() {
+  if (!document.getElementById('an-kpis')) return;
+  renderAnKPIs();
+  renderAnHeatmap();
+  renderAnCategoryBars();
+  renderAnTopStreaks();
+  renderAnMostMissed();
+  renderAnBarChart();
+}
+
+function renderAnKPIs() {
+  const todayStr = today();
+  const allItems = state.items.filter(i => i.repeat !== 'once');
+  const totalItems = allItems.length;
+
+  // Overall completion rate last 30 days
+  let totalExpected = 0, totalDone = 0;
+  const now = new Date();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    allItems.forEach(item => {
+      if (item.createdDate <= ds) {
+        totalExpected++;
+        if (item.completedDates && item.completedDates.includes(ds)) totalDone++;
+      }
+    });
+  }
+  const rate = totalExpected > 0 ? Math.round((totalDone / totalExpected) * 100) : 0;
+
+  // Best streak across all items
+  const bestStreak = allItems.reduce((best, item) => Math.max(best, calcStreak(item)), 0);
+
+  // Total completions ever
+  const totalCompletions = allItems.reduce((sum, i) => sum + (i.completedDates ? i.completedDates.length : 0), 0);
+
+  // Today's completion
+  const doneToday = allItems.filter(i => i.completedDates && i.completedDates.includes(todayStr)).length;
+  const todayRate = totalItems > 0 ? Math.round((doneToday / totalItems) * 100) : 0;
+
+  document.getElementById('an-kpis').innerHTML = `
+    <div class="an-kpi"><div class="an-kpi-num">${rate}%</div><div class="an-kpi-label">30-Day Completion Rate</div></div>
+    <div class="an-kpi"><div class="an-kpi-num">${bestStreak}</div><div class="an-kpi-label">Best Current Streak</div></div>
+    <div class="an-kpi"><div class="an-kpi-num">${totalCompletions}</div><div class="an-kpi-label">Total Completions</div></div>
+    <div class="an-kpi"><div class="an-kpi-num">${todayRate}%</div><div class="an-kpi-label">Today's Progress</div></div>
+  `;
+}
+
+function renderAnHeatmap() {
+  const container = document.getElementById('an-heatmap');
+  const now = new Date();
+  const cells = [];
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const count = state.items.filter(item =>
+      item.completedDates && item.completedDates.includes(ds)
+    ).length;
+    const total = state.items.filter(i => i.repeat !== 'once' && i.createdDate <= ds).length;
+    const pct = total > 0 ? count / total : 0;
+    const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    let level = 0;
+    if (pct > 0) level = 1;
+    if (pct >= 0.4) level = 2;
+    if (pct >= 0.7) level = 3;
+    if (pct >= 1) level = 4;
+    cells.push(`<div class="hm-cell level-${level}" title="${label}: ${count}/${total} done"></div>`);
+  }
+
+  container.innerHTML = `<div class="hm-grid">${cells.join('')}</div>
+    <div class="hm-legend">
+      <span>Less</span>
+      <div class="hm-cell level-0"></div>
+      <div class="hm-cell level-1"></div>
+      <div class="hm-cell level-2"></div>
+      <div class="hm-cell level-3"></div>
+      <div class="hm-cell level-4"></div>
+      <span>More</span>
+    </div>`;
+}
+
+function renderAnCategoryBars() {
+  const container = document.getElementById('an-category-bars');
+  const cats = ['habits', 'activities', 'learning', 'jobs'];
+  const todayStr = today();
+
+  container.innerHTML = cats.map(cat => {
+    const items = state.items.filter(i => i.cat === cat && i.repeat !== 'once');
+    const done = items.filter(i => i.completedDates && i.completedDates.includes(todayStr)).length;
+    const total = items.length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    return `
+      <div class="an-cat-row">
+        <div class="an-cat-name" style="color:${catColors[cat]}">${cat}</div>
+        <div class="an-cat-bar-wrap">
+          <div class="an-cat-bar-fill" style="width:${pct}%;background:${catColors[cat]}"></div>
+        </div>
+        <div class="an-cat-pct">${done}/${total}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAnTopStreaks() {
+  const container = document.getElementById('an-top-streaks');
+  const ranked = state.items
+    .filter(i => i.repeat !== 'once')
+    .map(i => ({ item: i, streak: calcStreak(i) }))
+    .filter(x => x.streak > 0)
+    .sort((a, b) => b.streak - a.streak)
+    .slice(0, 5);
+
+  if (ranked.length === 0) {
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-fire"></i><p>Complete habits to build streaks!</p></div>`;
+    return;
+  }
+
+  container.innerHTML = ranked.map(({ item, streak }, idx) => `
+    <div class="an-rank-row">
+      <span class="an-rank-num">#${idx + 1}</span>
+      <div class="an-rank-body">
+        <div class="an-rank-title">${escHtml(item.title)}</div>
+        <div class="an-rank-meta" style="color:${catColors[item.cat]}">${item.cat}</div>
+      </div>
+      <span class="an-rank-val" style="color:#f97316">🔥 ${streak}d</span>
+    </div>
+  `).join('');
+}
+
+function renderAnMostMissed() {
+  const container = document.getElementById('an-most-missed');
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  const cutoffStr = cutoff.toISOString().split('T')[0];
+
+  const ranked = state.items
+    .filter(i => i.repeat !== 'once')
+    .map(i => ({ item: i, missed: getMissedDays(i).filter(d => d >= cutoffStr).length }))
+    .filter(x => x.missed > 0)
+    .sort((a, b) => b.missed - a.missed)
+    .slice(0, 5);
+
+  if (ranked.length === 0) {
+    container.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><p>No missed habits in 30 days!</p></div>`;
+    return;
+  }
+
+  container.innerHTML = ranked.map(({ item, missed }, idx) => `
+    <div class="an-rank-row">
+      <span class="an-rank-num">#${idx + 1}</span>
+      <div class="an-rank-body">
+        <div class="an-rank-title">${escHtml(item.title)}</div>
+        <div class="an-rank-meta" style="color:${catColors[item.cat]}">${item.cat}</div>
+      </div>
+      <span class="an-rank-val" style="color:var(--danger)">${missed} missed</span>
+    </div>
+  `).join('');
+}
+
+function renderAnBarChart() {
+  const container = document.getElementById('an-bar-chart');
+  const now = new Date();
+  const bars = [];
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const count = state.items.filter(item =>
+      item.completedDates && item.completedDates.includes(ds)
+    ).length;
+    const label = i === 0 ? 'Today' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    bars.push({ label, count, isToday: i === 0 });
+  }
+
+  const max = Math.max(...bars.map(b => b.count), 1);
+
+  container.innerHTML = bars.map(b => `
+    <div class="an-bar-col">
+      <div class="an-bar-tip">${b.count > 0 ? b.count : ''}</div>
+      <div class="an-bar" style="height:${Math.max((b.count / max) * 100, 2)}%;${b.isToday ? 'background:linear-gradient(180deg,#f97316,#ef4444)' : ''}"></div>
+      <div class="an-bar-label">${b.label}</div>
+    </div>
+  `).join('');
 }
 
 // ── Escape HTML ────────────────────────────────────────

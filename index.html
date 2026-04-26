@@ -22,6 +22,7 @@
         <a href="#" class="nav-item" data-view="learning"><i class="fas fa-book-open"></i><span>Learning</span></a>
         <a href="#" class="nav-item" data-view="jobs"><i class="fas fa-briefcase"></i><span>Job Hunt</span></a>
         <a href="#" class="nav-item" data-view="creator"><i class="fas fa-star"></i><span>Creator</span></a>
+        <a href="#" class="nav-item" data-view="analytics"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
       </nav>
       <div class="sidebar-footer">
         <div class="streak-badge">
@@ -132,9 +133,24 @@
           </div>
         </div>
       </section>
+      <!-- Analytics View -->
+      <section class="view" id="view-analytics">
+        <div class="an-kpi-grid" id="an-kpis"></div>
+        <div class="an-row">
+          <div class="card an-card"><h3><i class="fas fa-calendar-alt"></i> 30-Day Heatmap</h3><div id="an-heatmap" class="an-heatmap"></div></div>
+          <div class="card an-card"><h3><i class="fas fa-chart-pie"></i> Category Breakdown</h3><div id="an-category-bars" class="an-cat-bars"></div></div>
+        </div>
+        <div class="an-row" style="margin-top:16px">
+          <div class="card an-card"><h3><i class="fas fa-trophy"></i> Top Streaks</h3><div id="an-top-streaks" class="an-list"></div></div>
+          <div class="card an-card"><h3><i class="fas fa-skull"></i> Most Missed</h3><div id="an-most-missed" class="an-list"></div></div>
+        </div>
+        <div class="an-row" style="margin-top:16px">
+          <div class="card an-card an-card-full"><h3><i class="fas fa-chart-bar"></i> Daily Completions - Last 30 Days</h3><div id="an-bar-chart" class="an-bar-chart"></div></div>
+        </div>
+      </section>
     </main>
   </div>
-  <div class="modal-overlay" id="modal-overlay">
+  <div class="modal-overlay"
     <div class="modal">
       <div class="modal-header"><h2>Add New Item</h2><button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button></div>
       <form id="add-form">
