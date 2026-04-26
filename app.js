@@ -131,7 +131,7 @@ function renderAll() {
   renderCalendar();
   renderCreator();
   renderSubjectCards();
-  renderAnalytics();
+  try { renderAnalytics(); } catch(e) { console.warn('Analytics render error:', e); }
 }
 
 function renderMissed() {
@@ -1334,7 +1334,7 @@ function renderAnBarChart() {
   container.innerHTML = bars.map(b => `
     <div class="an-bar-col">
       <div class="an-bar-tip">${b.count > 0 ? b.count : ''}</div>
-      <div class="an-bar" style="height:${Math.max((b.count / max) * 100, 2)}%;${b.isToday ? 'background:linear-gradient(180deg,#f97316,#ef4444)' : ''}"></div>
+      <div class="an-bar" style="height:${Math.max((b.count / max) * 100, 2)}px;${b.isToday ? 'background:linear-gradient(180deg,#f97316,#ef4444)' : ''}"></div>
       <div class="an-bar-label">${b.label}</div>
     </div>
   `).join('');
