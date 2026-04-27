@@ -775,8 +775,9 @@ function loadCreator() {
     const saved = localStorage.getItem(CREATOR_KEY);
     if (saved) {
       const d = JSON.parse(saved);
-      creatorState.instagram = d.instagram || { checkins: [] };
-      creatorState.substack  = d.substack  || { checkins: [] };
+      // Handle both old format (posts/followers) and new format (checkins)
+      creatorState.instagram = { checkins: d.instagram?.checkins || [] };
+      creatorState.substack  = { checkins: d.substack?.checkins  || [] };
     }
   } catch(e) {}
 }
@@ -1317,6 +1318,7 @@ function init() {
     btn.addEventListener('click', () => {
       const platform = btn.dataset.platform;
       const todayStr = today();
+      if (!creatorState[platform].checkins) creatorState[platform].checkins = [];
       const checkins = creatorState[platform].checkins;
       if (btn.classList.contains('checkin-yes')) {
         if (!checkins.includes(todayStr)) checkins.push(todayStr);
