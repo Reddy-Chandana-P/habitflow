@@ -105,31 +105,26 @@
         </div>
       </section>
       <section class="view" id="view-creator">
-        <div class="creator-stats" id="creator-stats-row"></div>
-        <div class="creator-layout">
-          <div class="card creator-panel">
-            <div class="creator-panel-header">
-              <div class="platform-badge insta"><i class="fab fa-instagram"></i> Instagram</div>
-              <button class="btn-add-post" data-platform="instagram"><i class="fas fa-plus"></i> Log Post</button>
+        <div class="creator-checkin-grid">
+          <div class="card checkin-card" id="checkin-instagram">
+            <div class="checkin-platform"><i class="fab fa-instagram"></i> Instagram</div>
+            <div class="checkin-question">Did you post today?</div>
+            <div class="checkin-btns">
+              <button class="checkin-yes" data-platform="instagram"><i class="fas fa-check"></i> Yes</button>
+              <button class="checkin-no" data-platform="instagram"><i class="fas fa-times"></i> No</button>
             </div>
-            <div class="form-group" style="margin-bottom:12px">
-              <label>Followers</label>
-              <div class="metric-input-row"><input type="number" id="insta-followers" placeholder="e.g. 1200" min="0" /><button class="btn-save-metric" data-platform="instagram">Save</button></div>
-            </div>
-            <h4 class="posts-label">Content Log</h4>
-            <div id="insta-posts" class="posts-list"></div>
+            <div class="checkin-status" id="insta-status"></div>
+            <div class="checkin-streak" id="insta-streak"></div>
           </div>
-          <div class="card creator-panel">
-            <div class="creator-panel-header">
-              <div class="platform-badge substack"><i class="fas fa-envelope-open-text"></i> Substack</div>
-              <button class="btn-add-post" data-platform="substack"><i class="fas fa-plus"></i> Log Post</button>
+          <div class="card checkin-card" id="checkin-substack">
+            <div class="checkin-platform"><i class="fas fa-envelope-open-text"></i> Substack</div>
+            <div class="checkin-question">Did you post today?</div>
+            <div class="checkin-btns">
+              <button class="checkin-yes" data-platform="substack"><i class="fas fa-check"></i> Yes</button>
+              <button class="checkin-no" data-platform="substack"><i class="fas fa-times"></i> No</button>
             </div>
-            <div class="form-group" style="margin-bottom:12px">
-              <label>Subscribers</label>
-              <div class="metric-input-row"><input type="number" id="substack-subscribers" placeholder="e.g. 340" min="0" /><button class="btn-save-metric" data-platform="substack">Save</button></div>
-            </div>
-            <h4 class="posts-label">Content Log</h4>
-            <div id="substack-posts" class="posts-list"></div>
+            <div class="checkin-status" id="substack-status"></div>
+            <div class="checkin-streak" id="substack-streak"></div>
           </div>
         </div>
       </section>
@@ -265,13 +260,6 @@
       </form>
     </div>
   </div>
-  <div class="modal-overlay" id="post-modal-overlay">
-    <div class="modal">
-      <div class="modal-header"><h2 id="post-modal-title">Log Post</h2><button class="modal-close" id="close-post-modal"><i class="fas fa-times"></i></button></div>
-      <form id="post-form">
-        <input type="hidden" id="post-id" /><input type="hidden" id="post-platform" />
-        <div class="form-group"><label>Title / Caption</label><input type="text" id="post-title" placeholder="What did you post about?" required /></div>
-        <div class="form-group" id="post-type-group"><label>Content Type</label><div class="cat-selector" id="post-type-selector"></div></div>
         <div class="form-group"><label>Date</label><input type="date" id="post-date" /></div>
         <div class="form-group"><label>Likes / Opens</label><input type="number" id="post-likes" placeholder="0" min="0" /></div>
         <div class="form-group"><label>Notes</label><input type="text" id="post-notes" placeholder="Ideas, links, thoughts..." /></div>

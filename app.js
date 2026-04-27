@@ -762,215 +762,69 @@ function deleteTopic(key, topicId) {
   showToast('Topic deleted', 'error');
 }
 
-// ── Creator State ──────────────────────────────────────
+// ── Creator Check-in ──────────────────────────────────
 const CREATOR_KEY = 'habitflow_creator';
 
 let creatorState = {
-  instagram: { followers: 0, posts: [] },
-  substack:  { subscribers: 0, posts: [] },
-  editPostId: null,
-  editPlatform: null,
-  postType: 'reel'
+  instagram: { checkins: [] },
+  substack:  { checkins: [] }
 };
-
-const instaTypes  = ['reel','post','story','carousel'];
-const substackTypes = ['newsletter','article','note'];
 
 function loadCreator() {
   try {
     const saved = localStorage.getItem(CREATOR_KEY);
     if (saved) {
       const d = JSON.parse(saved);
-      creatorState.instagram = d.instagram || { followers: 0, posts: [] };
-      creatorState.substack  = d.substack  || { subscribers: 0, posts: [] };
+      creatorState.instagram = d.instagram || { checkins: [] };
+      creatorState.substack  = d.substack  || { checkins: [] };
     }
   } catch(e) {}
 }
 
 function saveCreator() {
-  localStorage.setItem(CREATOR_KEY, JSON.stringify({
-    instagram: creatorState.instagram,
-    substack:  creatorState.substack
-  }));
+  localStorage.setItem(CREATOR_KEY, JSON.stringify(creatorState));
+}
+
+function calcCheckinStreak(checkins) {
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const ds = d.toISOString().split('T')[0];
+    if (!checkins.includes(ds)) break;
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
 }
 
 function renderCreator() {
-  // Sync follower/subscriber inputs
-  const fi = document.getElementById('insta-followers');
-  const fs = document.getElementById('substack-subscribers');
-  if (fi && !fi.matches(':focus')) fi.value = creatorState.instagram.followers || '';
-  if (fs && !fs.matches(':focus')) fs.value = creatorState.substack.subscribers || '';
+  const todayStr = today();
+  ['instagram', 'substack'].forEach(platform => {
+    const data = creatorState[platform];
+    const postedToday = data.checkins.includes(todayStr);
+    const streak = calcCheckinStreak(data.checkins);
+    const prefix = platform === 'instagram' ? 'insta' : 'substack';
 
-  renderCreatorStats();
-  renderPosts('instagram');
-  renderPosts('substack');
-}
+    const card = document.getElementById(`checkin-${platform}`);
+    if (!card) return;
 
-function renderCreatorStats() {
-  const ig = creatorState.instagram;
-  const ss = creatorState.substack;
-  const igPosts = ig.posts.length;
-  const ssPosts = ss.posts.length;
-  const igLikes = ig.posts.reduce((a, p) => a + (parseInt(p.likes) || 0), 0);
-  const ssOpens = ss.posts.reduce((a, p) => a + (parseInt(p.likes) || 0), 0);
+    // Highlight card if posted
+    card.classList.toggle('checkin-done', postedToday);
 
-  document.getElementById('creator-stats-row').innerHTML = `
-    <div class="creator-stat-card insta-card">
-      <div class="cs-icon"><i class="fab fa-instagram"></i></div>
-      <div class="cs-body">
-        <span class="cs-num">${(ig.followers || 0).toLocaleString()}</span>
-        <span class="cs-label">Followers</span>
-      </div>
-    </div>
-    <div class="creator-stat-card insta-card">
-      <div class="cs-icon"><i class="fas fa-images"></i></div>
-      <div class="cs-body">
-        <span class="cs-num">${igPosts}</span>
-        <span class="cs-label">Posts Logged</span>
-      </div>
-    </div>
-    <div class="creator-stat-card insta-card">
-      <div class="cs-icon"><i class="fas fa-heart"></i></div>
-      <div class="cs-body">
-        <span class="cs-num">${igLikes.toLocaleString()}</span>
-        <span class="cs-label">Total Likes</span>
-      </div>
-    </div>
-    <div class="creator-stat-card sub-card">
-      <div class="cs-icon"><i class="fas fa-envelope-open-text"></i></div>
-      <div class="cs-body">
-        <span class="cs-num">${(ss.subscribers || 0).toLocaleString()}</span>
-        <span class="cs-label">Subscribers</span>
-      </div>
-    </div>
-    <div class="creator-stat-card sub-card">
-      <div class="cs-icon"><i class="fas fa-newspaper"></i></div>
-      <div class="cs-body">
-        <span class="cs-num">${ssPosts}</span>
-        <span class="cs-label">Issues Logged</span>
-      </div>
-    </div>
-    <div class="creator-stat-card sub-card">
-      <div class="cs-icon"><i class="fas fa-eye"></i></div>
-      <div class="cs-body">
-        <span class="cs-num">${ssOpens.toLocaleString()}</span>
-        <span class="cs-label">Total Opens</span>
-      </div>
-    </div>
-  `;
-}
+    const statusEl = document.getElementById(`${prefix}-status`);
+    statusEl.textContent = postedToday ? 'Posted today!' : 'Not posted yet';
+    statusEl.className = `checkin-status ${postedToday ? 'status-yes' : 'status-no'}`;
 
-function renderPosts(platform) {
-  const data = creatorState[platform];
-  const posts = [...data.posts].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const container = document.getElementById(`${platform === 'instagram' ? 'insta' : 'substack'}-posts`);
-  if (!container) return;
-
-  if (posts.length === 0) {
-    container.innerHTML = `<div class="empty-state"><i class="fas fa-pen-nib"></i><p>No posts yet. Hit "Log Post" to start.</p></div>`;
-    return;
-  }
-
-  const typeColors = {
-    reel: '#f97316', post: '#22d3ee', story: '#a78bfa', carousel: '#34d399',
-    newsletter: '#f97316', article: '#22d3ee', note: '#a78bfa'
-  };
-
-  container.innerHTML = posts.map(p => `
-    <div class="post-item" data-id="${p.id}">
-      <div class="post-type-badge" style="background:${typeColors[p.type] || '#6b7280'}22; color:${typeColors[p.type] || '#6b7280'}">${p.type}</div>
-      <div class="post-body">
-        <div class="post-title">${escHtml(p.title)}</div>
-        <div class="post-meta">
-          ${p.date ? `📅 ${p.date}` : ''}
-          ${p.likes ? ` · ${platform === 'instagram' ? '❤️' : '👁️'} ${parseInt(p.likes).toLocaleString()}` : ''}
-          ${p.notes ? ` · ${escHtml(p.notes)}` : ''}
-        </div>
-      </div>
-      <div class="item-actions">
-        <button class="item-btn edit-post-btn" data-platform="${platform}" data-id="${p.id}" title="Edit"><i class="fas fa-pen"></i></button>
-        <button class="item-btn delete-post-btn" data-platform="${platform}" data-id="${p.id}" title="Delete"><i class="fas fa-trash"></i></button>
-      </div>
-    </div>
-  `).join('');
-
-  container.querySelectorAll('.edit-post-btn').forEach(btn => {
-    btn.addEventListener('click', () => openPostModal(btn.dataset.platform, btn.dataset.id));
-  });
-  container.querySelectorAll('.delete-post-btn').forEach(btn => {
-    btn.addEventListener('click', () => deletePost(btn.dataset.platform, btn.dataset.id));
+    const streakEl = document.getElementById(`${prefix}-streak`);
+    streakEl.innerHTML = streak > 0
+      ? `<i class="fas fa-fire"></i> ${streak} day streak`
+      : `<i class="fas fa-circle"></i> No streak yet`;
   });
 }
 
-function openPostModal(platform, postId = null) {
-  creatorState.editPlatform = platform;
-  creatorState.editPostId = postId;
-  const types = platform === 'instagram' ? instaTypes : substackTypes;
-  const isInsta = platform === 'instagram';
+function closePostModal() {}
 
-  document.getElementById('post-platform').value = platform;
-  document.getElementById('post-modal-title').textContent = `${postId ? 'Edit' : 'Log'} ${isInsta ? 'Instagram' : 'Substack'} Post`;
-  document.getElementById('post-date').value = today();
-
-  // Build type buttons
-  const selector = document.getElementById('post-type-selector');
-  creatorState.postType = types[0];
-  selector.innerHTML = types.map(t => `
-    <button type="button" class="post-type-btn ${t === types[0] ? 'active' : ''}" data-type="${t}">${t}</button>
-  `).join('');
-  selector.querySelectorAll('.post-type-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      selector.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      creatorState.postType = btn.dataset.type;
-    });
-  });
-
-  document.getElementById('post-likes').placeholder = isInsta ? 'Likes' : 'Opens / Views';
-
-  if (postId) {
-    const post = creatorState[platform].posts.find(p => p.id === postId);
-    if (!post) return;
-    document.getElementById('post-title').value = post.title;
-    document.getElementById('post-date').value = post.date || today();
-    document.getElementById('post-likes').value = post.likes || '';
-    document.getElementById('post-notes').value = post.notes || '';
-    creatorState.postType = post.type;
-    selector.querySelectorAll('.post-type-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.type === post.type);
-    });
-  } else {
-    document.getElementById('post-form').reset();
-    document.getElementById('post-date').value = today();
-  }
-
-  document.getElementById('post-modal-overlay').classList.add('open');
-  document.getElementById('post-title').focus();
-}
-
-function closePostModal() {
-  document.getElementById('post-modal-overlay').classList.remove('open');
-}
-
-function savePost(platform, postId, data) {
-  const arr = creatorState[platform].posts;
-  if (postId) {
-    const idx = arr.findIndex(p => p.id === postId);
-    if (idx !== -1) arr[idx] = { ...arr[idx], ...data };
-  } else {
-    arr.unshift({ id: uid(), ...data });
-  }
-  saveCreator();
-  renderCreator();
-  showToast(postId ? 'Post updated!' : 'Post logged!');
-}
-
-function deletePost(platform, postId) {
-  creatorState[platform].posts = creatorState[platform].posts.filter(p => p.id !== postId);
-  saveCreator();
-  renderCreator();
-  showToast('Post deleted', 'error');
-}
+// ── Calendar / Interview State ─────────────────────────
 
 // ── Calendar / Interview State ─────────────────────────
 const CAL_KEY = 'habitflow_calendar';
@@ -1427,7 +1281,7 @@ function init() {
 
   // Keyboard shortcut
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal(); closeEditModal(); closeInterviewModal(); closePostModal(); closeTopicModal(); closeSubjectPopup(); }
+    if (e.key === 'Escape') { closeModal(); closeEditModal(); closeInterviewModal(); closeTopicModal(); closeSubjectPopup(); }
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openModal(); }
   });
 
@@ -1457,43 +1311,24 @@ function init() {
     closeTopicModal();
   });
 
-  // Creator section
+  // Creator check-in
   loadCreator();
-
-  document.querySelectorAll('.btn-add-post').forEach(btn => {
-    btn.addEventListener('click', () => openPostModal(btn.dataset.platform));
-  });
-
-  document.querySelectorAll('.btn-save-metric').forEach(btn => {
+  document.querySelectorAll('.checkin-yes, .checkin-no').forEach(btn => {
     btn.addEventListener('click', () => {
       const platform = btn.dataset.platform;
-      if (platform === 'instagram') {
-        creatorState.instagram.followers = parseInt(document.getElementById('insta-followers').value) || 0;
+      const todayStr = today();
+      const checkins = creatorState[platform].checkins;
+      if (btn.classList.contains('checkin-yes')) {
+        if (!checkins.includes(todayStr)) checkins.push(todayStr);
+        showToast(`${platform === 'instagram' ? 'Instagram' : 'Substack'} posted today!`);
       } else {
-        creatorState.substack.subscribers = parseInt(document.getElementById('substack-subscribers').value) || 0;
+        const idx = checkins.indexOf(todayStr);
+        if (idx !== -1) checkins.splice(idx, 1);
+        showToast(`${platform === 'instagram' ? 'Instagram' : 'Substack'} unmarked`, 'error');
       }
       saveCreator();
       renderCreator();
-      showToast('Metrics saved!');
     });
-  });
-
-  document.getElementById('close-post-modal').addEventListener('click', closePostModal);
-  document.getElementById('post-modal-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('post-modal-overlay')) closePostModal();
-  });
-
-  document.getElementById('post-form').addEventListener('submit', e => {
-    e.preventDefault();
-    const platform = document.getElementById('post-platform').value;
-    const postId = document.getElementById('post-id').value || null;
-    const title = document.getElementById('post-title').value.trim();
-    const date = document.getElementById('post-date').value;
-    const likes = document.getElementById('post-likes').value;
-    const notes = document.getElementById('post-notes').value.trim();
-    if (!title) return;
-    savePost(platform, postId, { title, type: creatorState.postType, date, likes, notes });
-    closePostModal();
   });
 
   // Calendar nav

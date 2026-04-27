@@ -1350,3 +1350,88 @@ body {
   .an-kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .an-row { grid-template-columns: 1fr; }
 }
+
+/* ── Creator Check-in ── */
+.creator-checkin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.checkin-card {
+  padding: 32px;
+  text-align: center;
+  transition: all 0.3s;
+  border: 2px solid var(--border);
+}
+
+.checkin-card.checkin-done {
+  border-color: var(--jobs);
+  background: rgba(52,211,153,0.05);
+}
+
+.checkin-platform {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.checkin-question {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.checkin-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.checkin-yes, .checkin-no {
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.checkin-yes { background: rgba(52,211,153,0.2); color: var(--jobs); }
+.checkin-yes:hover { background: var(--jobs); color: #fff; }
+.checkin-no { background: rgba(244,63,94,0.15); color: var(--danger); }
+.checkin-no:hover { background: var(--danger); color: #fff; }
+
+.checkin-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.status-yes { color: var(--jobs); }
+.status-no  { color: var(--text-muted); }
+
+.checkin-streak {
+  font-size: 0.8rem;
+  color: #f97316;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+@media (max-width: 600px) {
+  .creator-checkin-grid { grid-template-columns: 1fr; }
+}
