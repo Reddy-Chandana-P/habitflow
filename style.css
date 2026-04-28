@@ -1,20 +1,20 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0d0f1a;
-  --surface: #151828;
-  --surface2: #1c2035;
-  --border: #252a40;
-  --text: #e8eaf6;
-  --text-muted: #6b7280;
+  --bg: #f0f2f8;
+  --surface: #ffffff;
+  --surface2: #f5f6fa;
+  --border: #e2e5f0;
+  --text: #1a1d2e;
+  --text-muted: #7b82a0;
   --habits: #f97316;
-  --activities: #22d3ee;
-  --learning: #a78bfa;
-  --jobs: #34d399;
+  --activities: #0ea5e9;
+  --learning: #8b5cf6;
+  --jobs: #10b981;
   --accent: #6366f1;
   --danger: #f43f5e;
   --radius: 16px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
 body {
@@ -1435,3 +1435,12 @@ body {
 @media (max-width: 600px) {
   .creator-checkin-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Light mode overrides ── */
+.sidebar { box-shadow: 2px 0 12px rgba(0,0,0,0.06); }
+.modal { box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
+.form-group select option { background: #fff; color: var(--text); }
+.item:hover { box-shadow: 0 2px 8px rgba(99,102,241,0.1); }
+.stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.subject-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.logo-mark { box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
