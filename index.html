@@ -296,6 +296,35 @@
       </form>
     </div>
   </div>
+  <!-- Application Modal -->
+  <div class="modal-overlay" id="app-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="app-modal-title">Add Application</h2>
+        <button class="modal-close" id="close-app-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="app-form">
+        <input type="hidden" id="app-id" />
+        <div class="form-group"><label>Company</label><input type="text" id="app-company" placeholder="e.g. Google" required /></div>
+        <div class="form-group"><label>Role</label><input type="text" id="app-role" placeholder="e.g. Frontend Engineer" /></div>
+        <div class="form-group"><label>Date Applied</label><input type="date" id="app-date" /></div>
+        <div class="form-group"><label>Status</label><div class="cat-selector"><button type="button" class="app-status-btn active" data-status="applied"><i class="fas fa-paper-plane"></i> Applied</button><button type="button" class="app-status-btn" data-status="interview"><i class="fas fa-user-tie"></i> Interview</button><button type="button" class="app-status-btn" data-status="offer"><i class="fas fa-check-circle"></i> Offer</button><button type="button" class="app-status-btn" data-status="rejected"><i class="fas fa-times-circle"></i> Rejected</button></div></div>
+        <div class="form-group"><label>Job URL</label><input type="text" id="app-url" placeholder="https://..." /></div>
+        <div class="form-group"><label>Notes</label><textarea id="app-notes" rows="3" placeholder="Salary, recruiter name, anything useful..."></textarea></div>
+        <button type="submit" class="btn-submit">Save <i class="fas fa-check"></i></button>
+      </form>
+    </div>
+  </div>
+  <!-- Company Notes Modal -->
+  <div class="modal-overlay" id="notes-modal-overlay">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2 id="notes-modal-title">Company Notes</h2>
+        <button class="modal-close" id="close-notes-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="notes-modal-body"></div>
+    </div>
+  </div>
   <div class="subject-popup-overlay" id="subject-popup-overlay">
     <div class="subject-popup">
       <div class="subject-popup-title" id="subject-popup-title">What did you study?</div>
