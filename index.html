@@ -84,23 +84,52 @@
           </div>
         </div>
       </section>
-      <section class="view" id="view-jobs">
-        <div class="jobs-layout">
-          <div class="card full-card"><h3><i class="fas fa-briefcase"></i> Job Hunting</h3><div id="list-jobs" class="item-list"></div></div>
-          <div class="card cal-card">
-            <div class="cal-header">
-              <button class="cal-nav" id="cal-prev"><i class="fas fa-chevron-left"></i></button>
-              <span id="cal-month-label"></span>
-              <button class="cal-nav" id="cal-next"><i class="fas fa-chevron-right"></i></button>
+            <section class="view" id="view-jobs">
+        <div class="jobs-tabs">
+          <button class="jobs-tab active" data-tab="kanban"><i class="fas fa-columns"></i> Applications</button>
+          <button class="jobs-tab" data-tab="calendar"><i class="fas fa-calendar-alt"></i> Interviews</button>
+        </div>
+        <div class="jobs-tab-panel active" id="jobs-tab-kanban">
+          <div class="kanban-header">
+            <button class="btn-add-app" id="open-app-modal"><i class="fas fa-plus"></i> Add Application</button>
+          </div>
+          <div class="kanban-board">
+            <div class="kanban-col" data-status="applied">
+              <div class="kanban-col-header applied-header"><i class="fas fa-paper-plane"></i> Applied <span class="kanban-count" id="count-applied">0</span></div>
+              <div class="kanban-cards" id="col-applied"></div>
             </div>
-            <div class="cal-grid" id="cal-grid"></div>
-            <div class="cal-legend">
-              <span><span class="cal-dot interview"></span>Interview</span>
-              <span><span class="cal-dot assessment"></span>Assessment</span>
-              <span><span class="cal-dot passed"></span>Passed</span>
-              <span><span class="cal-dot failed"></span>Failed</span>
+            <div class="kanban-col" data-status="interview">
+              <div class="kanban-col-header interview-header"><i class="fas fa-user-tie"></i> Interview <span class="kanban-count" id="count-interview">0</span></div>
+              <div class="kanban-cards" id="col-interview"></div>
             </div>
-            <div id="cal-day-events"></div>
+            <div class="kanban-col" data-status="offer">
+              <div class="kanban-col-header offer-header"><i class="fas fa-check-circle"></i> Offer <span class="kanban-count" id="count-offer">0</span></div>
+              <div class="kanban-cards" id="col-offer"></div>
+            </div>
+            <div class="kanban-col" data-status="rejected">
+              <div class="kanban-col-header rejected-header"><i class="fas fa-times-circle"></i> Rejected <span class="kanban-count" id="count-rejected">0</span></div>
+              <div class="kanban-cards" id="col-rejected"></div>
+            </div>
+          </div>
+        </div>
+        <div class="jobs-tab-panel" id="jobs-tab-calendar">
+          <div class="jobs-layout">
+            <div class="card full-card"><h3><i class="fas fa-briefcase"></i> Job Habits</h3><div id="list-jobs" class="item-list"></div></div>
+            <div class="card cal-card">
+              <div class="cal-header">
+                <button class="cal-nav" id="cal-prev"><i class="fas fa-chevron-left"></i></button>
+                <span id="cal-month-label"></span>
+                <button class="cal-nav" id="cal-next"><i class="fas fa-chevron-right"></i></button>
+              </div>
+              <div class="cal-grid" id="cal-grid"></div>
+              <div class="cal-legend">
+                <span><span class="cal-dot interview"></span>Interview</span>
+                <span><span class="cal-dot assessment"></span>Assessment</span>
+                <span><span class="cal-dot passed"></span>Passed</span>
+                <span><span class="cal-dot failed"></span>Failed</span>
+              </div>
+              <div id="cal-day-events"></div>
+            </div>
           </div>
         </div>
       </section>

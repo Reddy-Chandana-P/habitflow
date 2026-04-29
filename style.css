@@ -1435,3 +1435,226 @@ body {
 @media (max-width: 600px) {
   .creator-checkin-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Jobs Tabs ── */
+.jobs-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.jobs-tab {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.jobs-tab:hover { border-color: var(--accent); color: var(--text); }
+.jobs-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.jobs-tab-panel { display: none; }
+.jobs-tab-panel.active { display: block; }
+
+/* ── Kanban ── */
+.kanban-header { margin-bottom: 16px; }
+
+.btn-add-app {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.btn-add-app:hover { background: #4f46e5; transform: translateY(-1px); }
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.kanban-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.kanban-col-header {
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.applied-header   { background: rgba(99,102,241,0.15);  color: #6366f1; }
+.interview-header { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+.offer-header     { background: rgba(52,211,153,0.15);  color: #34d399; }
+.rejected-header  { background: rgba(244,63,94,0.15);   color: #f43f5e; }
+
+.kanban-count {
+  margin-left: auto;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 0.75rem;
+}
+
+.kanban-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
+
+.kanban-empty { text-align: center; font-size: 0.78rem; color: var(--text-muted); padding: 16px 0; }
+
+.kanban-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  animation: slideIn 0.2s ease;
+  transition: border-color 0.2s;
+}
+.kanban-card:hover { border-color: var(--accent); }
+
+.kc-company { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+.kc-role    { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+.kc-date    { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+
+.kc-actions { display: flex; gap: 6px; margin-bottom: 8px; }
+.kc-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+.kc-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.kc-btn.delete-app-btn:hover { background: var(--danger); border-color: var(--danger); }
+
+.kc-move { display: flex; gap: 4px; flex-wrap: wrap; }
+.kc-move-btn {
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--sc);
+  background: transparent;
+  color: var(--sc);
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: capitalize;
+  transition: all 0.15s;
+}
+.kc-move-btn:hover { background: var(--sc); color: #fff; }
+
+/* Notes modal */
+.modal-wide { width: 560px; }
+
+.notes-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.notes-status-badge {
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.notes-link {
+  font-size: 0.8rem;
+  color: var(--accent);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.notes-link:hover { text-decoration: underline; }
+
+.notes-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 0.88rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 160px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.notes-textarea:focus { border-color: var(--accent); }
+
+/* App status buttons */
+.app-status-btn {
+  padding: 7px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.app-status-btn:hover { border-color: var(--accent); color: var(--text); }
+.app-status-btn.active[data-status="applied"]   { background: rgba(99,102,241,0.2);  border-color: #6366f1; color: #6366f1; }
+.app-status-btn.active[data-status="interview"] { background: rgba(251,191,36,0.15); border-color: #fbbf24; color: #fbbf24; }
+.app-status-btn.active[data-status="offer"]     { background: rgba(52,211,153,0.15); border-color: #34d399; color: #34d399; }
+.app-status-btn.active[data-status="rejected"]  { background: rgba(244,63,94,0.15);  border-color: #f43f5e; color: #f43f5e; }
+
+/* form-group textarea */
+.form-group textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+.form-group textarea:focus { border-color: var(--accent); }
+
+@media (max-width: 1000px) {
+  .kanban-board { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .kanban-board { grid-template-columns: 1fr; }
+}

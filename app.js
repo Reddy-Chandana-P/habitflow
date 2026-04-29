@@ -131,6 +131,7 @@ function renderAll() {
   renderCalendar();
   renderCreator();
   renderSubjectCards();
+  renderKanban();
   try { renderAnalytics(); } catch(e) { console.warn('Analytics render error:', e); }
 }
 
@@ -825,7 +826,129 @@ function renderCreator() {
 
 function closePostModal() {}
 
-// ── Calendar / Interview State ─────────────────────────
+// ── Kanban / Applications ──────────────────────────────
+const KANBAN_KEY = 'habitflow_kanban';
+
+let kanbanState = { apps: [], selectedStatus: 'applied' };
+
+function loadKanban() {
+  try {
+    const saved = localStorage.getItem(KANBAN_KEY);
+    if (saved) kanbanState.apps = JSON.parse(saved);
+  } catch(e) { kanbanState.apps = []; }
+}
+
+function saveKanban() {
+  localStorage.setItem(KANBAN_KEY, JSON.stringify(kanbanState.apps));
+}
+
+const statusColors = { applied:'#6366f1', interview:'#fbbf24', offer:'#34d399', rejected:'#f43f5e' };
+
+function renderKanban() {
+  ['applied','interview','offer','rejected'].forEach(status => {
+    const col = document.getElementById(`col-${status}`);
+    const countEl = document.getElementById(`count-${status}`);
+    if (!col) return;
+    const apps = kanbanState.apps.filter(a => a.status === status);
+    if (countEl) countEl.textContent = apps.length;
+
+    if (apps.length === 0) { col.innerHTML = `<div class="kanban-empty">No applications</div>`; return; }
+
+    col.innerHTML = apps.map(app => `
+      <div class="kanban-card" data-id="${app.id}">
+        <div class="kc-company">${escHtml(app.company)}</div>
+        ${app.role ? `<div class="kc-role">${escHtml(app.role)}</div>` : ''}
+        ${app.date ? `<div class="kc-date"><i class="fas fa-calendar"></i> ${app.date}</div>` : ''}
+        <div class="kc-actions">
+          <button class="kc-btn notes-btn" data-id="${app.id}"><i class="fas fa-sticky-note"></i> Notes</button>
+          <button class="kc-btn edit-app-btn" data-id="${app.id}"><i class="fas fa-pen"></i></button>
+          <button class="kc-btn delete-app-btn" data-id="${app.id}"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="kc-move">
+          ${['applied','interview','offer','rejected'].filter(s => s !== status).map(s =>
+            `<button class="kc-move-btn" data-id="${app.id}" data-status="${s}" style="--sc:${statusColors[s]}">${s}</button>`
+          ).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    col.querySelectorAll('.notes-btn').forEach(b => b.addEventListener('click', () => openNotesModal(b.dataset.id)));
+    col.querySelectorAll('.edit-app-btn').forEach(b => b.addEventListener('click', () => openAppModal(b.dataset.id)));
+    col.querySelectorAll('.delete-app-btn').forEach(b => b.addEventListener('click', () => deleteApp(b.dataset.id)));
+    col.querySelectorAll('.kc-move-btn').forEach(b => b.addEventListener('click', () => moveApp(b.dataset.id, b.dataset.status)));
+  });
+}
+
+function openAppModal(appId = null) {
+  kanbanState.selectedStatus = 'applied';
+  document.getElementById('app-id').value = appId || '';
+  document.getElementById('app-modal-title').textContent = appId ? 'Edit Application' : 'Add Application';
+  if (appId) {
+    const app = kanbanState.apps.find(a => a.id === appId);
+    if (!app) return;
+    document.getElementById('app-company').value = app.company;
+    document.getElementById('app-role').value = app.role || '';
+    document.getElementById('app-date').value = app.date || '';
+    document.getElementById('app-url').value = app.url || '';
+    document.getElementById('app-notes').value = app.notes || '';
+    kanbanState.selectedStatus = app.status;
+  } else {
+    document.getElementById('app-form').reset();
+    document.getElementById('app-date').value = today();
+  }
+  document.querySelectorAll('.app-status-btn').forEach(b => b.classList.toggle('active', b.dataset.status === kanbanState.selectedStatus));
+  document.getElementById('app-modal-overlay').classList.add('open');
+  document.getElementById('app-company').focus();
+}
+
+function closeAppModal() { document.getElementById('app-modal-overlay').classList.remove('open'); }
+
+function saveApp(appId, data) {
+  if (appId) {
+    const idx = kanbanState.apps.findIndex(a => a.id === appId);
+    if (idx !== -1) kanbanState.apps[idx] = { ...kanbanState.apps[idx], ...data };
+  } else {
+    kanbanState.apps.unshift({ id: uid(), ...data });
+  }
+  saveKanban(); renderKanban();
+  showToast(appId ? 'Application updated!' : `Added ${data.company}!`);
+}
+
+function deleteApp(appId) {
+  kanbanState.apps = kanbanState.apps.filter(a => a.id !== appId);
+  saveKanban(); renderKanban();
+  showToast('Deleted', 'error');
+}
+
+function moveApp(appId, newStatus) {
+  const app = kanbanState.apps.find(a => a.id === appId);
+  if (!app) return;
+  app.status = newStatus;
+  saveKanban(); renderKanban();
+  showToast(`Moved to ${newStatus}!`);
+}
+
+function openNotesModal(appId) {
+  const app = kanbanState.apps.find(a => a.id === appId);
+  if (!app) return;
+  document.getElementById('notes-modal-title').textContent = `${app.company}${app.role ? ' — ' + app.role : ''}`;
+  document.getElementById('notes-modal-body').innerHTML = `
+    <div class="notes-meta">
+      <span class="notes-status-badge" style="background:${statusColors[app.status]}22;color:${statusColors[app.status]}">${app.status}</span>
+      ${app.date ? `<span style="font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-calendar"></i> Applied ${app.date}</span>` : ''}
+      ${app.url ? `<a href="${escHtml(app.url)}" target="_blank" class="notes-link"><i class="fas fa-external-link-alt"></i> Job Posting</a>` : ''}
+    </div>
+    <textarea class="notes-textarea" id="live-notes" placeholder="Interview prep, contacts, salary, anything...">${escHtml(app.notes || '')}</textarea>
+    <button class="btn-submit" id="save-notes-btn" style="margin-top:12px">Save Notes <i class="fas fa-check"></i></button>
+  `;
+  document.getElementById('save-notes-btn').addEventListener('click', () => {
+    app.notes = document.getElementById('live-notes').value;
+    saveKanban(); showToast('Notes saved!');
+  });
+  document.getElementById('notes-modal-overlay').classList.add('open');
+}
+
+function closeNotesModal() { document.getElementById('notes-modal-overlay').classList.remove('open'); }
 
 // ── Calendar / Interview State ─────────────────────────
 const CAL_KEY = 'habitflow_calendar';
@@ -1282,7 +1405,7 @@ function init() {
 
   // Keyboard shortcut
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal(); closeEditModal(); closeInterviewModal(); closeTopicModal(); closeSubjectPopup(); }
+    if (e.key === 'Escape') { closeModal(); closeEditModal(); closeInterviewModal(); closeTopicModal(); closeSubjectPopup(); closeAppModal(); closeNotesModal(); }
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openModal(); }
   });
 
@@ -1330,6 +1453,46 @@ function init() {
       }
       saveCreator();
       renderCreator();
+    });
+  });
+
+  // Kanban
+  loadKanban();
+  document.getElementById('open-app-modal').addEventListener('click', () => openAppModal());
+  document.getElementById('close-app-modal').addEventListener('click', closeAppModal);
+  document.getElementById('app-modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('app-modal-overlay')) closeAppModal();
+  });
+  document.getElementById('close-notes-modal').addEventListener('click', closeNotesModal);
+  document.getElementById('notes-modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('notes-modal-overlay')) closeNotesModal();
+  });
+  document.querySelectorAll('.app-status-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.app-status-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      kanbanState.selectedStatus = btn.dataset.status;
+    });
+  });
+  document.getElementById('app-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const appId = document.getElementById('app-id').value || null;
+    const company = document.getElementById('app-company').value.trim();
+    const role    = document.getElementById('app-role').value.trim();
+    const date    = document.getElementById('app-date').value;
+    const url     = document.getElementById('app-url').value.trim();
+    const notes   = document.getElementById('app-notes').value.trim();
+    if (!company) return;
+    saveApp(appId, { company, role, date, url, notes, status: kanbanState.selectedStatus });
+    closeAppModal();
+  });
+  // Jobs tab switching
+  document.querySelectorAll('.jobs-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.jobs-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.jobs-tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`jobs-tab-${tab.dataset.tab}`).classList.add('active');
     });
   });
 
