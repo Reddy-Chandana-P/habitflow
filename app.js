@@ -856,21 +856,38 @@ function renderKanban() {
 
     col.innerHTML = apps.map(app => `
       <div class="kanban-card" data-id="${app.id}">
-        <div class="kc-company">${escHtml(app.company)}</div>
-        ${app.role ? `<div class="kc-role">${escHtml(app.role)}</div>` : ''}
-        ${app.date ? `<div class="kc-date"><i class="fas fa-calendar"></i> ${app.date}</div>` : ''}
-        <div class="kc-actions">
-          <button class="kc-btn notes-btn" data-id="${app.id}"><i class="fas fa-sticky-note"></i> Notes</button>
-          <button class="kc-btn edit-app-btn" data-id="${app.id}"><i class="fas fa-pen"></i></button>
-          <button class="kc-btn delete-app-btn" data-id="${app.id}"><i class="fas fa-trash"></i></button>
+        <div class="kc-summary">
+          <div class="kc-company">${escHtml(app.company)}</div>
+          ${app.role ? `<div class="kc-role">${escHtml(app.role)}</div>` : ''}
+          <i class="fas fa-chevron-down kc-chevron"></i>
         </div>
-        <div class="kc-move">
-          ${['applied','interview','offer','rejected'].filter(s => s !== status).map(s =>
-            `<button class="kc-move-btn" data-id="${app.id}" data-status="${s}" style="--sc:${statusColors[s]}">${s}</button>`
-          ).join('')}
+        <div class="kc-details" style="display:none">
+          ${app.date ? `<div class="kc-date"><i class="fas fa-calendar"></i> ${app.date}</div>` : ''}
+          <div class="kc-actions">
+            <button class="kc-btn notes-btn" data-id="${app.id}"><i class="fas fa-sticky-note"></i> Notes</button>
+            <button class="kc-btn edit-app-btn" data-id="${app.id}"><i class="fas fa-pen"></i></button>
+            <button class="kc-btn delete-app-btn" data-id="${app.id}"><i class="fas fa-trash"></i></button>
+          </div>
+          <div class="kc-move">
+            ${['applied','interview','offer','rejected'].filter(s => s !== status).map(s =>
+              `<button class="kc-move-btn" data-id="${app.id}" data-status="${s}" style="--sc:${statusColors[s]}">${s}</button>`
+            ).join('')}
+          </div>
         </div>
       </div>
     `).join('');
+
+    // Toggle expand on summary click
+    col.querySelectorAll('.kc-summary').forEach(summary => {
+      summary.addEventListener('click', () => {
+        const card = summary.closest('.kanban-card');
+        const details = card.querySelector('.kc-details');
+        const chevron = card.querySelector('.kc-chevron');
+        const open = details.style.display !== 'none';
+        details.style.display = open ? 'none' : 'block';
+        chevron.style.transform = open ? '' : 'rotate(180deg)';
+      });
+    });
 
     col.querySelectorAll('.notes-btn').forEach(b => b.addEventListener('click', () => openNotesModal(b.dataset.id)));
     col.querySelectorAll('.edit-app-btn').forEach(b => b.addEventListener('click', () => openAppModal(b.dataset.id)));
