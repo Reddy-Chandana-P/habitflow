@@ -1658,3 +1658,25 @@ body {
 @media (max-width: 600px) {
   .kanban-board { grid-template-columns: 1fr; }
 }
+
+/* Kanban card collapsed/expanded */
+.kc-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 8px;
+}
+.kc-summary .kc-company { flex: 1; }
+.kc-chevron {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.kc-details {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  animation: slideIn 0.15s ease;
+}
