@@ -1326,11 +1326,11 @@ function renderAnBarChart() {
 
   const max = Math.max(...bars.map(b => b.count), 1);
 
-  container.innerHTML = bars.map(b => `
+  container.innerHTML = bars.map((b, i) => `
     <div class="an-bar-col">
       <div class="an-bar-tip">${b.count > 0 ? b.count : ''}</div>
       <div class="an-bar" style="height:${Math.max((b.count / max) * 100, 2)}px;${b.isToday ? 'background:linear-gradient(180deg,#f97316,#ef4444)' : ''}"></div>
-      <div class="an-bar-label">${b.label}</div>
+      <div class="an-bar-label">${(i % 5 === 0 || b.isToday) ? b.label : ''}</div>
     </div>
   `).join('');
 }
