@@ -1360,7 +1360,13 @@ function renderAnCreator() {
       const ds = d.toISOString().split('T')[0];
       const posted = checkins.includes(ds);
       const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      cells.push(`<div class="hm-cell ${posted ? 'level-4' : 'level-0'}" style="${posted ? `background:${p.color}` : ''}" title="${label}: ${posted ? 'Posted' : 'No post'}"></div>`);
+      const dateLabel = (i % 5 === 0 || i === 0) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      cells.push(`
+        <div class="an-hm-col">
+          <div class="hm-cell ${posted ? 'level-4' : 'level-0'} an-creator-heatmap-cell" style="${posted ? `background:${p.color};border-color:${p.color}` : ''}" title="${label}: ${posted ? 'Posted' : 'No post'}"></div>
+          <div class="an-hm-date">${dateLabel}</div>
+        </div>
+      `);
     }
 
     // Consistency % last 30 days
@@ -1376,7 +1382,7 @@ function renderAnCreator() {
             <span><i class="fas fa-percent" style="color:${p.color}"></i> ${pct}% last 30d</span>
           </div>
         </div>
-        <div class="hm-grid an-creator-heatmap">${cells.join('')}</div>
+        <div class="an-creator-heatmap">${cells.join('')}</div>
       </div>
     `;
   }).join('');
