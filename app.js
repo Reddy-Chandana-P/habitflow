@@ -1154,6 +1154,7 @@ function renderAnalytics() {
   renderAnTopStreaks();
   renderAnMostMissed();
   renderAnBarChart();
+  renderAnCreator();
 }
 
 function renderAnKPIs() {
@@ -1333,6 +1334,52 @@ function renderAnBarChart() {
       <div class="an-bar-label">${(i % 5 === 0 || b.isToday) ? b.label : ''}</div>
     </div>
   `).join('');
+}
+
+function renderAnCreator() {
+  const container = document.getElementById('an-creator');
+  if (!container) return;
+
+  const platforms = [
+    { key: 'instagram', label: 'Instagram', icon: 'fab fa-instagram', color: '#e1306c' },
+    { key: 'substack',  label: 'Substack',  icon: 'fas fa-envelope-open-text', color: '#ff6719' }
+  ];
+
+  const now = new Date();
+
+  container.innerHTML = platforms.map(p => {
+    const checkins = (creatorState[p.key] && creatorState[p.key].checkins) || [];
+    const streak = calcCheckinStreak(checkins);
+    const total = checkins.length;
+
+    // Last 30 days heatmap
+    const cells = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const ds = d.toISOString().split('T')[0];
+      const posted = checkins.includes(ds);
+      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      cells.push(`<div class="hm-cell ${posted ? 'level-4' : 'level-0'}" style="${posted ? `background:${p.color}` : ''}" title="${label}: ${posted ? 'Posted' : 'No post'}"></div>`);
+    }
+
+    // Consistency % last 30 days
+    const pct = Math.round((Math.min(total, 30) / 30) * 100);
+
+    return `
+      <div class="an-creator-row">
+        <div class="an-creator-info">
+          <div class="an-creator-platform" style="color:${p.color}"><i class="${p.icon}"></i> ${p.label}</div>
+          <div class="an-creator-stats">
+            <span><i class="fas fa-fire" style="color:#f97316"></i> ${streak} day streak</span>
+            <span><i class="fas fa-check-circle" style="color:${p.color}"></i> ${total} total posts</span>
+            <span><i class="fas fa-percent" style="color:${p.color}"></i> ${pct}% last 30d</span>
+          </div>
+        </div>
+        <div class="hm-grid an-creator-heatmap">${cells.join('')}</div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ── Escape HTML ────────────────────────────────────────

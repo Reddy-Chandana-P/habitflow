@@ -1680,3 +1680,46 @@ body {
   border-top: 1px solid var(--border);
   animation: slideIn 0.15s ease;
 }
+
+/* ── Creator Analytics ── */
+.an-creator { display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
+
+.an-creator-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+  background: var(--surface2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.an-creator-info { min-width: 200px; flex-shrink: 0; }
+
+.an-creator-platform {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.an-creator-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.an-creator-stats span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.an-creator-heatmap {
+  flex: 1;
+  grid-template-columns: repeat(30, 1fr) !important;
+}
