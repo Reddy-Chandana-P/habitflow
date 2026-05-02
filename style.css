@@ -1344,7 +1344,7 @@ body {
   transition: height 0.5s ease;
 }
 .an-bar-label { font-size: 0.68rem; color: #d1d5db; white-space: nowrap; transform: rotate(-40deg); transform-origin: top left; margin-top: 8px; min-height: 28px; }
-.an-bar-tip { font-size: 0.65rem; color: var(--text-muted); position: absolute; top: 0; }
+.an-bar-tip { font-size: 0.68rem; font-weight: 700; color: #e0e7ff; position: absolute; top: 0; }
 
 @media (max-width: 1000px) {
   .an-kpi-grid { grid-template-columns: repeat(2, 1fr); }
