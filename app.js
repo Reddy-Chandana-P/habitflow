@@ -1347,24 +1347,33 @@ function renderAnCreator() {
 
   const now = new Date();
 
+  // Build 30 day date info once
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    days.push({
+      ds: d.toISOString().split('T')[0],
+      label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      showLabel: (i % 5 === 0) // every 5th
+    });
+  }
+
   container.innerHTML = platforms.map(p => {
     const checkins = (creatorState[p.key] && creatorState[p.key].checkins) || [];
     const streak = calcCheckinStreak(checkins);
     const total = checkins.length;
-
-    // Last 30 days heatmap
-    const cells = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const ds = d.toISOString().split('T')[0];
-      const posted = checkins.includes(ds);
-      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      cells.push(`<div class="hm-cell ${posted ? 'level-4' : 'level-0'}" style="${posted ? `background:${p.color}` : ''}" title="${label}: ${posted ? 'Posted' : 'No post'}"></div>`);
-    }
-
-    // Consistency % last 30 days
     const pct = Math.round((Math.min(total, 30) / 30) * 100);
+
+    const cells = days.map(day => {
+      const posted = checkins.includes(day.ds);
+      return `<div class="creator-hm-cell-wrap">
+        <div class="hm-cell ${posted ? 'level-4' : 'level-0'} creator-hm-cell"
+          style="${posted ? `background:${p.color};border-color:${p.color}` : ''}"
+          title="${day.label}: ${posted ? 'Posted' : 'No post'}"></div>
+        <div class="creator-hm-date">${day.showLabel ? day.label : ''}</div>
+      </div>`;
+    }).join('');
 
     return `
       <div class="an-creator-row">
@@ -1376,7 +1385,7 @@ function renderAnCreator() {
             <span><i class="fas fa-percent" style="color:${p.color}"></i> ${pct}% last 30d</span>
           </div>
         </div>
-        <div class="hm-grid an-creator-heatmap">${cells.join('')}</div>
+        <div class="creator-hm-row">${cells}</div>
       </div>
     `;
   }).join('');
