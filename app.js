@@ -54,6 +54,15 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
+function applyTheme(theme) {
+  document.body.classList.toggle('light', theme === 'light');
+  localStorage.setItem('hf_theme', theme);
+  const icon = document.getElementById('theme-toggle')?.querySelector('i');
+  if (icon) {
+    icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+  }
+}
+
 // Calculate missed days for an item
 function getMissedDays(item) {
   if (!item.repeat || item.repeat === 'once') return [];
@@ -1399,6 +1408,15 @@ function escHtml(str) {
 // ── Init ───────────────────────────────────────────────
 function init() {
   loadState();
+
+  // Theme toggle
+  const savedTheme = localStorage.getItem('hf_theme');
+  if (savedTheme === 'light') applyTheme('light');
+
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light');
+    applyTheme(isLight ? 'dark' : 'light');
+  });
 
   // Set date
   document.getElementById('view-date').textContent = formatDate(new Date());

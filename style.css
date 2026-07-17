@@ -17,6 +17,16 @@
   --shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
+body.light {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background: var(--bg);
@@ -1812,3 +1822,31 @@ body {
   min-height: 10px;
   text-align: center;
 }
+
+/* ── Theme Toggle ── */
+.btn-theme {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.btn-theme:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+/* Light mode adjustments */
+body.light .sidebar { border-right-color: var(--border); }
+body.light .streak-badge { background: linear-gradient(135deg, #f97316, #ef4444); }
+body.light .nav-item.active { background: var(--accent); }
+body.light .modal { background: var(--surface); }
+body.light .subject-popup { background: var(--surface); }
+body.light .kanban-col { background: var(--surface); }
+body.light .logo-mark { background: var(--accent); }
